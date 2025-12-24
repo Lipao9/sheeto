@@ -2,7 +2,7 @@
 # 1) Build stage (PHP + Composer + Node)
 #    This allows @laravel/vite-plugin-wayfinder to run artisan during `npm run build`.
 # -------------------------
-FROM php:8.3-cli-alpine AS build
+FROM php:8.4-cli-alpine AS build
 WORKDIR /app
 
 # System deps + Node (for Vite build)
@@ -47,7 +47,7 @@ RUN npm run build
 # -------------------------
 # 2) Runtime (Nginx + PHP-FPM + Supervisor)
 # -------------------------
-FROM php:8.3-fpm-alpine AS app
+FROM php:8.4-fpm-alpine AS app
 WORKDIR /var/www/html
 
 # System packages
