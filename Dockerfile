@@ -13,6 +13,10 @@ RUN npm ci
 COPY . .
 RUN mkdir -p bootstrap/cache storage \
     && chmod -R 775 bootstrap/cache storage
+ENV APP_ENV=production
+ENV APP_DEBUG=false
+ENV APP_URL=http://localhost
+ENV APP_KEY=base64:DkuSXmNqoTBwDfk3bZRLszItVqXQuOYFTyqr1yKhIF4=
 RUN php artisan package:discover --ansi
 RUN npm run build
 
