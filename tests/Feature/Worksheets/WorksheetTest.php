@@ -196,6 +196,7 @@ test('user can view the worksheets index without a selected worksheet', function
         ->assertInertia(fn (Assert $page) => $page
             ->component('worksheets/index')
             ->where('worksheet', null)
+            ->has('worksheetHistory', 0)
         );
 });
 

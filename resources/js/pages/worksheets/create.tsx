@@ -15,7 +15,7 @@ import AppLayout from '@/layouts/app-layout';
 import { create as worksheetsCreate, index as worksheetsIndex } from '@/routes/worksheets';
 import { type BreadcrumbItem } from '@/types';
 import { Form, Head } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { type ChangeEvent, useState } from 'react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -47,15 +47,21 @@ export default function WorksheetsCreatePage() {
     const showSemesterPeriod =
         educationLevel === 'faculdade' || educationLevel === 'pos-graduacao';
 
-    useEffect(() => {
-        if (!showGradeYear) {
+    const handleEducationLevelChange = (
+        event: ChangeEvent<HTMLSelectElement>,
+    ) => {
+        const nextLevel = event.target.value as EducationLevel;
+
+        setEducationLevel(nextLevel);
+
+        if (nextLevel !== 'escola') {
             setGradeYear('');
         }
 
-        if (!showSemesterPeriod) {
+        if (nextLevel !== 'faculdade' && nextLevel !== 'pos-graduacao') {
             setSemesterPeriod('');
         }
-    }, [showGradeYear, showSemesterPeriod]);
+    };
 
     const storeRoute = WorksheetController.store();
 
@@ -92,11 +98,7 @@ export default function WorksheetsCreatePage() {
                                                 id="education_level"
                                                 name="education_level"
                                                 value={educationLevel}
-                                                onChange={(event) =>
-                                                    setEducationLevel(
-                                                        event.target.value as EducationLevel,
-                                                    )
-                                                }
+                                                onChange={handleEducationLevelChange}
                                                 className={selectClassName}
                                                 required
                                             >

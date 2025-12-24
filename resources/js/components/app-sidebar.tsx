@@ -31,7 +31,10 @@ import AppLogo from './app-logo';
 
 export function AppSidebar() {
     const { props, url } = usePage<SharedData>();
-    const history = props.worksheetHistory ?? [];
+    const history = useMemo(
+        () => props.worksheetHistory ?? [],
+        [props.worksheetHistory],
+    );
     const [search, setSearch] = useState('');
 
     const handleRemoveWorksheet = (worksheetId: number) => {

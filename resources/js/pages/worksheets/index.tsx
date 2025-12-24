@@ -771,6 +771,14 @@ export default function WorksheetsPage({
                                                                                 Questão{' '}
                                                                                 {number}
                                                                             </span>
+                                                                            {typeLabel && (
+                                                                                <Badge
+                                                                                    variant="secondary"
+                                                                                    className="text-[11px]"
+                                                                                >
+                                                                                    {typeLabel}
+                                                                                </Badge>
+                                                                            )}
                                                                         </div>
                                                                         {question.prompt && (
                                                                             <p className="text-foreground">
