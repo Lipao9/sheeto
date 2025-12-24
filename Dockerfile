@@ -11,6 +11,8 @@ RUN composer install --no-interaction --prefer-dist --no-dev --optimize-autoload
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
+RUN mkdir -p bootstrap/cache storage \
+    && chmod -R 775 bootstrap/cache storage
 RUN php artisan package:discover --ansi
 RUN npm run build
 
