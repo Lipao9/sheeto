@@ -101,7 +101,13 @@ COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Permissions for Laravel
+# These directories may be missing in the runtime image (often empty + git-ignored),
+# so create them before chmod/chown.
 RUN addgroup -g 1000 -S appgroup && adduser -u 1000 -S appuser -G appgroup \
+ && mkdir -p /var/www/html/bootstrap/cache \
+            /var/www/html/storage/framework/cache \
+            /var/www/html/storage/framework/sessions \
+            /var/www/html/storage/framework/views \
  && chown -R appuser:appgroup /var/www/html \
  && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
