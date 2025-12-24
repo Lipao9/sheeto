@@ -25,7 +25,8 @@ RUN composer install \
     --prefer-dist \
     --no-interaction \
     --no-progress \
-    --optimize-autoloader
+    --optimize-autoloader \
+    --no-scripts
 
 # Install Node deps
 COPY package*.json ./
@@ -39,6 +40,9 @@ COPY . .
 RUN if [ ! -f .env ]; then \
   printf "APP_ENV=production\nAPP_DEBUG=false\nAPP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\nDB_CONNECTION=sqlite\nDB_DATABASE=/tmp/db.sqlite\n" > .env; \
   fi
+
+# Run Composer post-autoload scripts now that the app code is present.
+RUN composer run-script post-autoload-dump --no-interaction
 
 # Build assets
 RUN npm run build
