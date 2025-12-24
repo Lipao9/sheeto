@@ -35,6 +35,14 @@ RUN npm ci
 # Copy the rest of the app
 COPY . .
 
+# Laravel expects these directories to exist and be writable.
+# They are often empty in git (git-ignored), so they may be missing during Docker builds.
+RUN mkdir -p bootstrap/cache \
+    storage/framework/cache \
+    storage/framework/sessions \
+    storage/framework/views \
+ && chmod -R 775 bootstrap/cache storage
+
 # Ensure an .env exists for build-time artisan calls (Wayfinder).
 # Render does not provide runtime env vars during image build.
 RUN if [ ! -f .env ]; then \
