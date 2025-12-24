@@ -1,0 +1,13 @@
+.env
+.env.*
+.git
+.github
+.vscode
+node_modules
+vendor
+storage
+bootstrap/cache
+public/build
+npm-debug.log
+yarn.lock
+pnpm-lock.yaml
