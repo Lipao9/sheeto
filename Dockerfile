@@ -1,22 +1,24 @@
 # -------------------------
-# 1) Frontend build (Vite)
+# 1) Build stage (PHP + Composer + Node)
+#    This allows @laravel/vite-plugin-wayfinder to run artisan during `npm run build`.
 # -------------------------
-FROM node:20-alpine AS frontend
+FROM php:8.3-cli-alpine AS build
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci
+# System deps + Node (for Vite build)
+RUN apk add --no-cache \
+    bash curl git unzip \
+    icu-dev libzip-dev oniguruma-dev postgresql-dev \
+    nodejs npm
 
-COPY . .
-RUN npm run build
+# PHP extensions needed for Laravel boot + DB (Postgres)
+RUN docker-php-ext-install -j$(nproc) \
+    pdo pdo_pgsql intl zip mbstring
 
+# Composer
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# -------------------------
-# 2) PHP deps (Composer)
-# -------------------------
-FROM composer:2 AS vendor
-WORKDIR /app
-
+# Install PHP deps (vendor)
 COPY composer.json composer.lock ./
 RUN composer install \
     --no-dev \
@@ -25,17 +27,30 @@ RUN composer install \
     --no-progress \
     --optimize-autoloader
 
-# Se você usa scripts do Composer que dependem de artisan/env, comente a linha acima e use:
-# RUN composer install --no-dev --prefer-dist --no-interaction --no-progress --optimize-autoloader --no-scripts
+# Install Node deps
+COPY package*.json ./
+RUN npm ci
+
+# Copy the rest of the app
+COPY . .
+
+# Ensure an .env exists for build-time artisan calls (Wayfinder).
+# Render does not provide runtime env vars during image build.
+RUN if [ ! -f .env ]; then \
+  printf "APP_ENV=production\nAPP_DEBUG=false\nAPP_KEY=base64:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\nDB_CONNECTION=sqlite\nDB_DATABASE=/tmp/db.sqlite\n" > .env; \
+  fi
+
+# Build assets
+RUN npm run build
 
 
 # -------------------------
-# 3) Runtime (Nginx + PHP-FPM)
+# 2) Runtime (Nginx + PHP-FPM + Supervisor)
 # -------------------------
 FROM php:8.3-fpm-alpine AS app
 WORKDIR /var/www/html
 
-# Pacotes do sistema
+# System packages
 RUN apk add --no-cache \
     nginx \
     supervisor \
@@ -49,9 +64,9 @@ RUN apk add --no-cache \
     libjpeg-turbo-dev \
     libpng-dev
 
-# Extensões PHP comuns (ajuste conforme seu projeto)
+# PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j$(nproc) \
+ && docker-php-ext-install -j$(nproc) \
     pdo \
     pdo_pgsql \
     intl \
@@ -60,27 +75,25 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     gd \
     opcache
 
-# Copia código
+# Copy app code
 COPY . .
 
-# Copia vendor do estágio do composer
-COPY --from=vendor /app/vendor ./vendor
+# Copy vendor + built assets from build stage
+COPY --from=build /app/vendor ./vendor
+COPY --from=build /app/public/build ./public/build
 
-# Copia assets buildados (Vite geralmente gera em public/build)
-COPY --from=frontend /app/public/build ./public/build
-
-# Configs Nginx + Supervisor + entrypoint
+# Configs
 COPY docker/nginx.conf.template /etc/nginx/http.d/default.conf.template
 COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# Permissões Laravel
+# Permissions for Laravel
 RUN addgroup -g 1000 -S appgroup && adduser -u 1000 -S appuser -G appgroup \
-    && chown -R appuser:appgroup /var/www/html \
-    && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+ && chown -R appuser:appgroup /var/www/html \
+ && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
-# Render usa PORT (dinâmico). Nginx vai ouvir nele via template.
+# Render uses dynamic PORT; Nginx will listen on it via template.
 ENV PHP_FPM_LISTEN=127.0.0.1:9000
 
 EXPOSE 8080
