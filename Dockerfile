@@ -88,6 +88,12 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     gd \
     opcache
 
+RUN sed -i 's/^;clear_env = no/clear_env = no/' /usr/local/etc/php-fpm.d/www.conf \
+ && sed -i 's/^;catch_workers_output = yes/catch_workers_output = yes/' /usr/local/etc/php-fpm.d/www.conf \
+ && sed -i 's/^user = .*/user = appuser/' /usr/local/etc/php-fpm.d/www.conf \
+ && sed -i 's/^group = .*/group = appgroup/' /usr/local/etc/php-fpm.d/www.conf \
+ && sed -i 's/^listen = .*/listen = 127.0.0.1:9000/' /usr/local/etc/php-fpm.d/www.conf
+
 # Copy app code
 COPY . .
 
