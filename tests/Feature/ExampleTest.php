@@ -1,7 +1,11 @@
 <?php
 
 it('returns a successful response', function () {
-    $response = $this->get('/');
+    $response = $this->withHeader('X-Forwarded-Proto', 'https')
+        ->get('/');
 
-    $response->assertStatus(200);
+    $response->assertSuccessful();
+
+    expect($response->getContent())
+        ->toMatch('/https:\\/\\/[^"\\\']+\\/build\\/assets\\//');
 });
