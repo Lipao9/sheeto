@@ -32,9 +32,30 @@ class WorksheetController extends Controller
         ]);
     }
 
-    public function create(): Response
+    public function create(Request $request): Response
     {
-        return Inertia::render('worksheets/create');
+        $lastWorksheet = null;
+        $user = $request->user();
+
+        if ($user) {
+            $lastWorksheet = $user->worksheets()->latest()->first([
+                'education_level',
+                'grade_year',
+                'semester_period',
+                'question_count',
+                'answer_style',
+            ]);
+        }
+
+        return Inertia::render('worksheets/create', [
+            'lastWorksheet' => $lastWorksheet ? [
+                'education_level' => $lastWorksheet->education_level,
+                'grade_year' => $lastWorksheet->grade_year,
+                'semester_period' => $lastWorksheet->semester_period,
+                'question_count' => $lastWorksheet->question_count,
+                'answer_style' => $lastWorksheet->answer_style,
+            ] : null,
+        ]);
     }
 
     public function store(

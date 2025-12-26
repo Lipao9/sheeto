@@ -75,7 +75,7 @@ export function AppSidebar() {
                         <Button
                             asChild
                             size="sm"
-                            className="w-full justify-start gap-2"
+                            className="w-full justify-start gap-2 my-2"
                         >
                             <Link href={worksheetsCreate()} prefetch>
                                 <Plus className="size-4" />

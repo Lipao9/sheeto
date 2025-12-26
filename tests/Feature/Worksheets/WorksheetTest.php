@@ -202,11 +202,39 @@ test('user can view the worksheets index without a selected worksheet', function
 
 test('user can view the create worksheet page', function () {
     $user = User::factory()->create();
+    Worksheet::factory()->for($user)->create([
+        'education_level' => 'escola',
+        'grade_year' => '1o ano',
+        'question_count' => 5,
+        'answer_style' => 'simples',
+        'created_at' => now()->subDay(),
+        'updated_at' => now()->subDay(),
+    ]);
+    $worksheet = Worksheet::factory()->for($user)->create([
+        'education_level' => 'faculdade',
+        'grade_year' => null,
+        'semester_period' => '2o semestre',
+        'question_count' => 12,
+        'answer_style' => 'explicacao',
+        'discipline' => 'Biologia',
+        'topic' => 'Genetica',
+    ]);
 
     $this->actingAs($user)
         ->get(route('worksheets.create'))
         ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('worksheets/create'));
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('worksheets/create')
+            ->has('worksheetHistory', 2)
+            ->where('worksheetHistory.0.id', $worksheet->id)
+            ->where('worksheetHistory.0.discipline', 'Biologia')
+            ->where('worksheetHistory.0.topic', 'Genetica')
+            ->where('lastWorksheet.education_level', 'faculdade')
+            ->where('lastWorksheet.grade_year', null)
+            ->where('lastWorksheet.semester_period', '2o semestre')
+            ->where('lastWorksheet.question_count', 12)
+            ->where('lastWorksheet.answer_style', 'explicacao')
+        );
 });
 
 function worksheetPayload(array $overrides = []): array

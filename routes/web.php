@@ -12,7 +12,6 @@ Route::get('/', function () {
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::redirect('dashboard', '/fichas')->name('dashboard');
 
     Route::get('fichas', [WorksheetController::class, 'index'])
         ->name('worksheets.index');
