@@ -81,7 +81,7 @@ export default function Welcome({
             className="relative min-h-screen overflow-hidden bg-[var(--sheeto-canvas)] text-[var(--sheeto-ink)]"
             style={themeStyles}
         >
-            <Head title="Sheeto — Fichas de estudo inteligentes">
+            <Head title="Sheeto">
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link
                     href="https://fonts.bunny.net/css?family=space-grotesk:400,500,600,700|fraunces:600,700"
