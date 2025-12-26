@@ -157,7 +157,7 @@ export default function Welcome({
                             </h1>
                             <p className="max-w-xl text-base text-[color:rgba(29,27,23,0.7)] md:text-lg">
                                 A plataforma organiza perguntas, gabaritos e níveis de dificuldade para você ganhar
-                                tempo sem perder tempo. Tudo em com uma estética clara e
+                                tempo sem perder tempo. Tudo com uma estética clara e
                                 elegante.
                             </p>
                             <div className="flex flex-col gap-3 sm:flex-row">
