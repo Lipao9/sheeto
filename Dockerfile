@@ -68,6 +68,7 @@ RUN apk add --no-cache \
     supervisor \
     bash \
     curl \
+    gettext \
     icu-dev \
     libzip-dev \
     oniguruma-dev \
