@@ -102,7 +102,7 @@ COPY --from=build /app/vendor ./vendor
 COPY --from=build /app/public/build ./public/build
 
 # Configs
-COPY docker/nginx.conf.template /etc/nginx/http.d/default.conf.template
+COPY docker/nginx.conf /etc/nginx/http.d/default.conf
 COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
