@@ -149,7 +149,7 @@ class GenerateWorksheet
         $segments[] = '- Nivel: '.ucfirst($payload['education_level']);
         $segments[] = '- Objetivo: '.$payload['goal'];
         $segments[] = '- Dificuldade: '.$payload['difficulty'];
-        $segments[] = '- Quantidade de questoes: '.$payload['question_count'];
+        $segments[] = '- Quantidade de questões (EXATAMENTE): '.$payload['question_count'];
 
         if (! empty($payload['grade_year'])) {
             $segments[] = '- Serie/Ano: '.$payload['grade_year'];
