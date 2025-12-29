@@ -84,8 +84,119 @@ const questionTypeLabels: Record<string, string> = {
     problemas_praticos: 'Problemas práticos',
 };
 
+const normalizeText = (value: string): string =>
+    value
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+
+const normalizeQuestionType = (value?: string | null): string | undefined => {
+    if (!value) {
+        return undefined;
+    }
+
+    const trimmed = value.trim();
+    if (!trimmed) {
+        return undefined;
+    }
+
+    const normalized = normalizeText(trimmed);
+
+    if (normalized.includes('verdadeiro')) {
+        return 'verdadeiro_falso';
+    }
+
+    if (normalized.includes('multipla')) {
+        return 'multipla_escolha';
+    }
+
+    if (normalized.includes('discurs')) {
+        return 'discursivo';
+    }
+
+    if (normalized.includes('problema')) {
+        return 'problemas_praticos';
+    }
+
+    const slug = normalized
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '');
+
+    if (questionTypeLabels[slug]) {
+        return slug;
+    }
+
+    return trimmed;
+};
+
+const inferQuestionType = (
+    question: WorksheetQuestion,
+    exerciseTypes?: string[] | null,
+): string | undefined => {
+    const explicitType = normalizeQuestionType(question.type);
+    if (explicitType) {
+        return explicitType;
+    }
+
+    if (question.statements.length > 0) {
+        return 'verdadeiro_falso';
+    }
+
+    if (question.options.length > 0) {
+        return 'multipla_escolha';
+    }
+
+    const openEndedTypes = (exerciseTypes ?? []).filter(
+        (type) => type === 'discursivo' || type === 'problemas_praticos',
+    );
+
+    if (openEndedTypes.length === 1) {
+        return openEndedTypes[0];
+    }
+
+    if (openEndedTypes.length > 1) {
+        const text = normalizeText(
+            [question.prompt, ...question.details].filter(Boolean).join(' '),
+        );
+        const practicalHints = [
+            'problema',
+            'problemas',
+            'situacao',
+            'cenario',
+            'contexto',
+            'dados',
+            'tarefa',
+            'aplicacao',
+            'aplique',
+            'resolva',
+            'realista',
+        ];
+
+        return practicalHints.some((hint) => text.includes(hint))
+            ? 'problemas_praticos'
+            : 'discursivo';
+    }
+
+    if (exerciseTypes?.length === 1) {
+        return exerciseTypes[0];
+    }
+
+    return undefined;
+};
+
+const resolveQuestionTypes = (
+    questions: WorksheetQuestion[],
+    exerciseTypes?: string[] | null,
+): WorksheetQuestion[] =>
+    questions.map((question) => ({
+        ...question,
+        type: inferQuestionType(question, exerciseTypes),
+    }));
+
 const parseWorksheetContent = (
     content: string | null | undefined,
+    exerciseTypes?: string[] | null,
 ): WorksheetContent | null => {
     if (!content) {
         return null;
@@ -151,7 +262,7 @@ const parseWorksheetContent = (
 
             return {
                 summary,
-                questions,
+                questions: resolveQuestionTypes(questions, exerciseTypes),
                 answerKey,
             };
         } catch {
@@ -294,7 +405,7 @@ const parseWorksheetContent = (
 
     return {
         summary: summaryLines.filter(Boolean),
-        questions,
+        questions: resolveQuestionTypes(questions, exerciseTypes),
         answerKey,
     };
 };
@@ -315,7 +426,10 @@ export default function WorksheetsPage({
     const answerStyleLabel = worksheet?.answer_style
         ? answerStyleLabels[worksheet.answer_style] ?? worksheet.answer_style
         : '';
-    const worksheetContent = parseWorksheetContent(worksheet?.content);
+    const worksheetContent = parseWorksheetContent(
+        worksheet?.content,
+        worksheet?.exercise_types,
+    );
     const summary = worksheetContent?.summary ?? [];
     const questions = worksheetContent?.questions ?? [];
     const answerKey = worksheetContent?.answerKey ?? [];

@@ -174,7 +174,9 @@ test('semester period is required for college and postgraduate levels', function
 
 test('history only shows worksheets from the authenticated user', function () {
     $user = User::factory()->create();
-    $worksheet = Worksheet::factory()->for($user)->create();
+    $worksheet = Worksheet::factory()->for($user)->create([
+        'exercise_types' => ['multipla_escolha', 'discursivo'],
+    ]);
     Worksheet::factory()->create(); // Belongs to another user
 
     $response = $this->actingAs($user)->get(route('worksheets.index'));
@@ -182,6 +184,7 @@ test('history only shows worksheets from the authenticated user', function () {
     $response->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('worksheets/index')
         ->where('worksheet.id', $worksheet->id)
+        ->where('worksheet.exercise_types', ['multipla_escolha', 'discursivo'])
         ->has('worksheetHistory', 1)
         ->where('worksheetHistory.0.id', $worksheet->id)
     );

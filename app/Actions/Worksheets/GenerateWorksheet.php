@@ -2,20 +2,18 @@
 
 namespace App\Actions\Worksheets;
 
+use Illuminate\Support\Facades\Http;
 use RuntimeException;
 use Throwable;
-use Illuminate\Support\Facades\Http;
 
 class GenerateWorksheet
 {
-    public function __construct(private readonly string $model = '')
-    {
-    }
+    public function __construct(private readonly string $model = '') {}
 
     /**
      * Build a worksheet draft using the provided request data.
      *
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      */
     public function handle(array $payload): string
     {
@@ -32,7 +30,7 @@ class GenerateWorksheet
             return $this->fallback($payload);
         }
 
-        $systemPrompt = 'Você é um professor experiente da educação brasileira e especialista em criação de listas de exercícios didáticas. Gere apenas TEXTO SIMPLES em português do Brasil, sem Markdown, sem JSON e sem emojis. Siga rigorosamente o formato solicitado pelo usuário.';
+        $systemPrompt = 'Você é um professor experiente da educação brasileira e um especialista em criação de listas de exercícios didáticos. Gere apenas TEXTO SIMPLES em português do Brasil (pt-BR), sem Markdown, sem JSON e sem emojis. Siga rigorosamente o formato solicitado e o exemplo.';
 
         return $this->requestContent(
             $baseUrl,
@@ -44,7 +42,7 @@ class GenerateWorksheet
     }
 
     /**
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      */
     private function prompt(array $payload): string
     {
@@ -53,28 +51,54 @@ class GenerateWorksheet
             : [];
 
         $segments = [
-            'Você é um professor experiente da educação brasileira.',
-            'Crie uma LISTA DE EXERCÍCIOS em português do Brasil (pt-BR).',
-            'Retorne APENAS TEXTO SIMPLES.',
-            'NÃO use Markdown.',
-            'NÃO use JSON.',
-            'NÃO use emojis.',
-            'Siga EXATAMENTE o formato abaixo.',
+            'Você é um professor experiente da educação brasileira e um especialista em criação de listas de exercícios didáticos.',
+            'Gere uma lista de exercícios em português do Brasil (pt-BR) no formato EXATAMENTE descrito abaixo.',
+            'Retorne APENAS TEXTO SIMPLES, SEM Markdown, SEM JSON, SEM emojis.',
             '',
+            'Formato OBRIGATÓRIO:',
+            '1. Resumo (4-7 linhas):',
+            '- Cada linha deve começar com "- " (hífen e espaço).',
+            '- Deve descrever tópico, objetivo, número de questões e tipos de questões.',
+            '',
+            '2. Questões:',
+            '- Cada questão deve ter o número seguido de ponto e espaço ("1. ").',
+            '- Para múltipla escolha: cada alternativa deve estar em linha separada começando com "a) ", "b) ", etc.',
+            '- Para Verdadeiro/Falso: deve haver 4 afirmativas, cada uma em linha separada, começando com "(   ) ".',
+            '- Para Discursiva e Problemas práticos: enunciado normal em linha separada.',
+            '',
+            '3. Gabarito:',
+            '- Cada linha deve ser no formato "1. resposta".',
+            '- Use a mesma numeração das questões.',
+            '',
+            'Exemplo de saída válida:',
             'Resumo:',
-            '- 4 a 7 linhas.',
-            '- Cada linha deve iniciar com "- ".',
-            '- Cite o tópico, o objetivo, a dificuldade e os tipos de exercícios.',
+            '- Lista de exercícios sobre X com 10 questões.',
+            '- Tópico: X — objetivo de praticar Y com dificuldade Z.',
+            '- Inclui Verdadeiro/Falso, Múltipla escolha e Discursivo.',
             '',
-            'Questoes:',
-            '- Cada questão deve ser numerada como "1. enunciado".',
-            '- Não pule numeração.',
-            '- Não crie títulos extras.',
+            'Questões:',
+            '1. Explique o conceito de X de forma clara.',
+            '2. Sobre Y, qual alternativa está correta?',
+            'a) Alternativa A',
+            'b) Alternativa B',
+            'c) Alternativa C',
+            'd) Alternativa D',
+            '3. (Verdadeiro/Falso) Assinale V para Verdadeiro e F para Falso:',
+            '(   ) Afirmação 1.',
+            '(   ) Afirmação 2.',
+            '(   ) Afirmação 3.',
+            '(   ) Afirmação 4.',
             '',
             'Gabarito:',
-            '- Cada linha deve ser no formato "1. resposta".',
-            '- Use a mesma numeracao das questoes.',
-            '- Se houver explicacao, use " - explicacao curta".',
+            '1. Resposta da questão 1',
+            '2. b',
+            '3. V, F, V, F',
+            '',
+            'Regras adicionais:',
+            '- Não escreva nada fora do formato acima.',
+            '- Não combine alternativas na mesma linha da questão.',
+            '- Sempre gerar 4 afirmativas em Verdadeiro/Falso.',
+            '- Sempre gerar cada alternativa em linha própria em múltipla escolha.',
             '',
             'Tipos de questão permitidos:',
             '- multipla_escolha',
@@ -90,26 +114,24 @@ class GenerateWorksheet
         if (! empty($payload['answer_style']) && is_string($payload['answer_style'])) {
             $segments[] = '- Gabarito: '.$this->formatAnswerStyle($payload['answer_style']).'.';
             if ($payload['answer_style'] === 'explicacao') {
-                $segments[] = 'Inclua explicacao curta (1-2 frases) apos " - ".';
-                $segments[] = 'Exemplo: 1. resposta - explicacao curta.';
+                $segments[] = 'Inclua explicação curta (1-2 frases) após " - ".';
+                $segments[] = 'Exemplo: 1. resposta - explicação curta.';
             }
 
             if ($payload['answer_style'] === 'simples') {
-                $segments[] = 'Use apenas a resposta, sem explicacao.';
+                $segments[] = 'Use apenas a resposta, sem explicação.';
                 $segments[] = 'Exemplo: 1. resposta.';
             }
         }
 
         if (in_array('verdadeiro_falso', $exerciseTypes, true)) {
-            $segments[] = 'verdadeiro_falso: use exatamente o enunciado "(Verdadeiro/Falso) Assinale V para Verdadeiro e F para Falso nas afirmativas:".';
-            $segments[] = 'verdadeiro_falso: inclua de 4 a 5 afirmativas.';
-            $segments[] = 'verdadeiro_falso: cada afirmativa deve iniciar com "(   ) ".';
-            $segments[] = 'verdadeiro_falso: não misture com outros tipos de questão.';
+            $segments[] = 'verdadeiro_falso: use exatamente o enunciado "(Verdadeiro/Falso) Assinale V para Verdadeiro e F para Falso:".';
+            $segments[] = 'verdadeiro_falso: sempre 4 afirmativas, uma por linha iniciando com "(   ) ".';
             $segments[] = 'verdadeiro_falso: gabarito no formato "V, F, V, F".';
         }
 
         if (in_array('multipla_escolha', $exerciseTypes, true)) {
-            $segments[] = 'multipla_escolha: 4-5 alternativas "a) ", "b) ", "c) ", "d) " e opcional "e) ".';
+            $segments[] = 'multipla_escolha: 4 alternativas "a) ", "b) ", "c) ", "d) ", cada uma em linha separada.';
             $segments[] = 'multipla_escolha: gabarito apenas a letra.';
         }
 
@@ -141,7 +163,7 @@ class GenerateWorksheet
             $segments[] = '- Observacoes adicionais: '.$payload['notes'];
         }
 
-        $segments[] = 'Nao inclua nenhum texto fora do formato definido.';
+        $segments[] = 'Não inclua nenhum texto fora do formato definido.';
 
         return implode("\n", $segments);
     }
@@ -209,7 +231,7 @@ class GenerateWorksheet
     }
 
     /**
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
      */
     private function fallback(array $payload): string
     {
@@ -383,7 +405,7 @@ class GenerateWorksheet
     }
 
     /**
-     * @param array<int, string> $types
+     * @param  array<int, string>  $types
      */
     private function formatExerciseTypes(array $types): string
     {

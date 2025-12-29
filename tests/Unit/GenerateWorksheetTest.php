@@ -23,7 +23,7 @@ test('fallback true or false questions include blanks', function () {
         'notes' => null,
     ];
 
-    $content = (new GenerateWorksheet())->handle($payload);
+    $content = (new GenerateWorksheet)->handle($payload);
 
     expect($content)
         ->toContain('Questoes:')
@@ -49,7 +49,7 @@ test('throws when the api request fails', function () {
         'notes' => null,
     ];
 
-    expect(fn () => (new GenerateWorksheet())->handle($payload))
+    expect(fn () => (new GenerateWorksheet)->handle($payload))
         ->toThrow(ConnectionException::class);
 });
 
@@ -78,7 +78,7 @@ test('builds a plain text prompt with type rules', function () {
         'notes' => null,
     ];
 
-    (new GenerateWorksheet())->handle($payload);
+    (new GenerateWorksheet)->handle($payload);
 
     $recorded = Http::recorded();
 
@@ -87,11 +87,12 @@ test('builds a plain text prompt with type rules', function () {
     $prompt = $recorded[0][0]->data()['messages'][1]['content'] ?? '';
 
     expect($prompt)
-        ->toContain('Retorne APENAS TEXTO SIMPLES.')
+        ->toContain('Retorne APENAS TEXTO SIMPLES, SEM Markdown, SEM JSON, SEM emojis.')
+        ->and($prompt)->toContain('Formato OBRIGATÓRIO:')
         ->and($prompt)->toContain('Gabarito:')
-        ->and($prompt)->toContain('Exemplo: 1. resposta - explicacao curta.')
+        ->and($prompt)->toContain('Exemplo: 1. resposta - explicação curta.')
         ->and($prompt)->toContain('verdadeiro_falso: use exatamente o enunciado')
         ->and($prompt)->toContain('verdadeiro_falso: gabarito no formato')
-        ->and($prompt)->toContain('multipla_escolha: 4-5 alternativas')
+        ->and($prompt)->toContain('multipla_escolha: 4 alternativas')
         ->and($prompt)->toContain('multipla_escolha: gabarito apenas a letra');
 });
