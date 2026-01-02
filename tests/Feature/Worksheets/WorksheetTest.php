@@ -240,6 +240,19 @@ test('user can view the create worksheet page', function () {
         );
 });
 
+test('create worksheet page has no last worksheet when history is empty', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('worksheets.create'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('worksheets/create')
+            ->has('worksheetHistory', 0)
+            ->where('lastWorksheet', null)
+        );
+});
+
 function worksheetPayload(array $overrides = []): array
 {
     return array_merge([
