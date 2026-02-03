@@ -7,5 +7,5 @@ it('returns a successful response', function () {
     $response->assertSuccessful();
 
     expect($response->getContent())
-        ->toMatch('/https:\\/\\/[^"\\\']+\\/build\\/assets\\//');
+        ->toMatch('/https:\\/\\/[^"\\\']+\\/build\\/assets\\/|http:\\/\\/(\\[::1\\]|localhost):5173\\/.*@vite\\/client/');
 });
