@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\WorksheetController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -27,5 +28,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('fichas/{worksheet}', [WorksheetController::class, 'destroy'])
         ->name('worksheets.destroy');
 });
+
+Route::middleware(['auth', 'verified', 'can:isAdmin'])
+    ->prefix('admin')
+    ->name('admin.')
+    ->group(function () {
+        Route::get('dashboard', AdminDashboardController::class)
+            ->name('dashboard');
+    });
 
 require __DIR__.'/settings.php';

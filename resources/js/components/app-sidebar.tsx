@@ -23,9 +23,10 @@ import {
     destroy as worksheetsDestroy,
     index as worksheetsIndex,
 } from '@/routes/worksheets';
+import { dashboard as adminDashboard } from '@/routes/admin';
 import { type SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
-import { MoreHorizontal, Plus, Search, Trash2 } from 'lucide-react';
+import { MoreHorizontal, Plus, Search, Shield, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import AppLogo from './app-logo';
 
@@ -35,6 +36,7 @@ export function AppSidebar() {
         () => props.worksheetHistory ?? [],
         [props.worksheetHistory],
     );
+    const isAdmin = Boolean(props.auth?.user?.is_admin);
     const [search, setSearch] = useState('');
 
     const handleRemoveWorksheet = (worksheetId: number) => {
@@ -83,6 +85,16 @@ export function AppSidebar() {
                             </Link>
                         </Button>
                     </SidebarMenuItem>
+                    {isAdmin && (
+                        <SidebarMenuItem>
+                            <SidebarMenuButton asChild>
+                                <Link href={adminDashboard()} prefetch>
+                                    <Shield className="size-4" />
+                                    Dashboard admin
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                    )}
                     <SidebarMenuItem>
                         <div className="flex items-center gap-2 rounded-md border border-input px-2 py-1.5 text-sm text-muted-foreground shadow-xs">
                             <Search className="size-4 shrink-0" />
