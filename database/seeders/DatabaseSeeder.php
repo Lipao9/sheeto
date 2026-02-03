@@ -15,6 +15,20 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
 
+        $adminPassword = config('admin.password');
+
+        if ($adminPassword) {
+            User::updateOrCreate(
+                ['email' => config('admin.email')],
+                [
+                    'name' => config('admin.name'),
+                    'password' => $adminPassword,
+                    'email_verified_at' => now(),
+                    'is_admin' => true,
+                ]
+            );
+        }
+
         User::firstOrCreate(
             ['email' => 'test@example.com'],
             [
