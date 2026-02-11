@@ -22,9 +22,17 @@ class StoreWorksheetRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'creation_mode' => ['required', 'string', 'in:form,document'],
+            'source_document' => [
+                'nullable',
+                'file',
+                'required_if:creation_mode,document',
+                'mimes:pdf,docx,txt',
+                'max:10240',
+            ],
             'education_level' => ['required', 'string', 'in:escola,faculdade,pos-graduacao,mestrado,doutorado,outro'],
-            'discipline' => ['required', 'string', 'max:255'],
-            'topic' => ['required', 'string', 'max:255'],
+            'discipline' => ['nullable', 'string', 'max:255', 'required_if:creation_mode,form'],
+            'topic' => ['nullable', 'string', 'max:255', 'required_if:creation_mode,form'],
             'difficulty' => ['required', 'string', 'in:iniciante,intermediario,avancado'],
             'goal' => ['required', 'string', 'in:prova,revisao,aprendizado'],
             'question_count' => ['required', 'integer', 'min:1', 'max:20'],
@@ -35,5 +43,28 @@ class StoreWorksheetRequest extends FormRequest
             'semester_period' => ['nullable', 'string', 'max:255', 'required_if:education_level,faculdade,pos-graduacao'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array
+    {
+        return [
+            'source_document.required_if' => 'Envie um documento para gerar a ficha.',
+            'source_document.mimes' => 'O documento deve estar em PDF, DOCX ou TXT.',
+            'source_document.max' => 'O documento deve ter no máximo 10 MB.',
+            'discipline.required_if' => 'A disciplina é obrigatória no modo formulário.',
+            'topic.required_if' => 'O tópico é obrigatório no modo formulário.',
+        ];
+    }
+
+    protected function prepareForValidation(): void
+    {
+        if (! $this->has('creation_mode')) {
+            $this->merge([
+                'creation_mode' => 'form',
+            ]);
+        }
     }
 }

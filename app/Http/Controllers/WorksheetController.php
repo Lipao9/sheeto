@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Worksheets\GenerateWorksheet;
+use App\Actions\Worksheets\PrepareDocumentContext;
 use App\Http\Requests\Worksheets\StoreWorksheetRequest;
 use App\Models\Worksheet;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Arr;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -60,14 +63,52 @@ class WorksheetController extends Controller
 
     public function store(
         StoreWorksheetRequest $request,
-        GenerateWorksheet $generateWorksheet
+        GenerateWorksheet $generateWorksheet,
+        PrepareDocumentContext $prepareDocumentContext
     ): RedirectResponse {
-        $data = $request->validated();
+        $validated = $request->validated();
+        $generationPayload = $validated;
 
-        $content = $generateWorksheet->handle($data);
+        if (($validated['creation_mode'] ?? 'form') === 'document') {
+            $sourceDocument = $request->file('source_document');
+
+            if ($sourceDocument === null) {
+                throw ValidationException::withMessages([
+                    'source_document' => 'Envie um documento para gerar a ficha.',
+                ]);
+            }
+
+            $documentContext = $prepareDocumentContext->handle($sourceDocument);
+
+            $generationPayload['discipline'] = $this->resolveDocumentField(
+                $validated['discipline'] ?? null,
+                $documentContext['discipline'] ?? null,
+                'Interdisciplinar'
+            );
+            $generationPayload['topic'] = $this->resolveDocumentField(
+                $validated['topic'] ?? null,
+                $documentContext['topic'] ?? null,
+                'Estudo guiado pelo documento'
+            );
+            $generationPayload['reference_material'] = $documentContext['reference_material'] ?? '';
+        }
+
+        $content = $generateWorksheet->handle($generationPayload);
 
         $worksheet = $request->user()->worksheets()->create([
-            ...$data,
+            ...Arr::only($generationPayload, [
+                'education_level',
+                'discipline',
+                'topic',
+                'difficulty',
+                'goal',
+                'question_count',
+                'exercise_types',
+                'answer_style',
+                'grade_year',
+                'semester_period',
+                'notes',
+            ]),
             'content' => $content,
         ]);
 
@@ -103,5 +144,25 @@ class WorksheetController extends Controller
             'content' => $worksheet->content,
             'created_at' => $worksheet->created_at->toIso8601String(),
         ];
+    }
+
+    private function resolveDocumentField(
+        mixed $manualValue,
+        mixed $inferredValue,
+        string $defaultValue
+    ): string {
+        $manual = trim((string) $manualValue);
+
+        if ($manual !== '') {
+            return $manual;
+        }
+
+        $inferred = trim((string) $inferredValue);
+
+        if ($inferred !== '') {
+            return $inferred;
+        }
+
+        return $defaultValue;
     }
 }
