@@ -14,6 +14,7 @@ test('login screen can be rendered', function () {
             ->component('auth/login')
             ->where('canResetPassword', Features::enabled(Features::resetPasswords()))
             ->where('canRegister', Features::enabled(Features::registration()))
+            ->where('googleLoginUrl', route('auth.google.redirect'))
         );
 });
 
