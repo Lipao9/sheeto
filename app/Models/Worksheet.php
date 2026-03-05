@@ -41,6 +41,8 @@ class Worksheet extends Model
         return [
             'exercise_types' => 'array',
             'question_count' => 'integer',
+            'share_link_copies_count' => 'integer',
+            'share_link_visits_count' => 'integer',
         ];
     }
 
