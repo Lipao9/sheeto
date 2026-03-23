@@ -29,18 +29,24 @@ import {
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
 import { cn, isSameUrl, resolveUrl } from '@/lib/utils';
+import { dashboard } from '@/routes';
 import { index as worksheetsIndex } from '@/routes/worksheets';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { BookOpen, Folder, LayoutGrid, Menu, Search } from 'lucide-react';
+import { BookOpen, ClipboardList, Folder, LayoutDashboard, LayoutGrid, Menu, Search } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Fichas',
+        title: 'Início',
+        href: dashboard(),
+        icon: LayoutDashboard,
+    },
+    {
+        title: 'Listas',
         href: worksheetsIndex(),
-        icon: LayoutGrid,
+        icon: ClipboardList,
     },
 ];
 
@@ -140,7 +146,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     </div>
 
                     <Link
-                        href={worksheetsIndex()}
+                        href={dashboard()}
                         prefetch
                         className="flex items-center space-x-2"
                     >

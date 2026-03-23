@@ -8,9 +8,10 @@ import {
     CardTitle,
 } from '@/components/ui/card';
 import AppLayout from '@/layouts/app-layout';
+import { click as worksheetsShareClick } from '@/routes/worksheets/share';
 import { create as worksheetsCreate, index as worksheetsIndex } from '@/routes/worksheets';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 
 type Worksheet = {
@@ -27,6 +28,9 @@ type Worksheet = {
     semester_period?: string | null;
     notes?: string | null;
     content?: string | null;
+    share_url?: string | null;
+    share_link_copies_count?: number;
+    share_link_visits_count?: number;
     created_at: string;
 };
 
@@ -410,10 +414,33 @@ const parseWorksheetContent = (
     };
 };
 
+const copyToClipboard = async (value: string): Promise<boolean> => {
+    try {
+        if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(value);
+            return true;
+        }
+
+        const textarea = document.createElement('textarea');
+        textarea.value = value;
+        textarea.style.position = 'fixed';
+        textarea.style.opacity = '0';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+
+        return true;
+    } catch {
+        return false;
+    }
+};
+
 export default function WorksheetsPage({
     worksheet = null,
 }: WorksheetsPageProps) {
     const [isCopied, setIsCopied] = useState(false);
+    const [isShareCopied, setIsShareCopied] = useState(false);
     const educationLevelLabel = worksheet
         ? (educationLevelLabels[worksheet.education_level] ??
               worksheet.education_level)
@@ -438,31 +465,46 @@ export default function WorksheetsPage({
     );
     const copyText = worksheet?.content ?? '';
     const canCopy = copyText.trim().length > 0;
+    const canShare = Boolean(worksheet?.share_url);
 
     const handleCopy = async () => {
         if (!canCopy) {
             return;
         }
 
-        try {
-            if (navigator.clipboard?.writeText) {
-                await navigator.clipboard.writeText(copyText);
-            } else {
-                const textarea = document.createElement('textarea');
-                textarea.value = copyText;
-                textarea.style.position = 'fixed';
-                textarea.style.opacity = '0';
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
-            }
+        const copied = await copyToClipboard(copyText);
 
+        if (copied) {
             setIsCopied(true);
             window.setTimeout(() => setIsCopied(false), 2000);
-        } catch {
+        } else {
             setIsCopied(false);
         }
+    };
+
+    const handleShare = () => {
+        if (!worksheet?.share_url) {
+            return;
+        }
+
+        router.post(worksheetsShareClick(worksheet.id).url, {}, {
+            preserveScroll: true,
+            preserveState: true,
+            onSuccess: async () => {
+                const copied = await copyToClipboard(worksheet.share_url ?? '');
+
+                if (!copied) {
+                    setIsShareCopied(false);
+                    return;
+                }
+
+                setIsShareCopied(true);
+                window.setTimeout(() => setIsShareCopied(false), 2000);
+            },
+            onError: () => {
+                setIsShareCopied(false);
+            },
+        });
     };
 
     const handlePrint = () => {
@@ -741,24 +783,34 @@ export default function WorksheetsPage({
                                 : 'Crie uma nova ficha para visualizar aqui.'}
                         </CardDescription>
                         {worksheet && (
-                            <div className="flex flex-wrap gap-2">
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={handlePrint}
-                                >
-                                    Imprimir / PDF
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="secondary"
-                                    size="sm"
-                                    onClick={handleCopy}
-                                    disabled={!canCopy}
-                                >
-                                    {isCopied ? 'Copiado!' : 'Copiar lista'}
-                                </Button>
+                            <div className="flex flex-col gap-2">
+                                <div className="flex flex-wrap gap-2">
+                                    <Button type="button" size="sm" onClick={handleShare} disabled={!canShare}>
+                                        {isShareCopied ? 'Link copiado!' : 'Copiar link para aluno'}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={handlePrint}
+                                    >
+                                        Imprimir / PDF
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={handleCopy}
+                                        disabled={!canCopy}
+                                    >
+                                        {isCopied ? 'Copiado!' : 'Copiar lista'}
+                                    </Button>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    {isShareCopied
+                                        ? 'Link pronto para compartilhar com o aluno.'
+                                        : 'Use o link compartilhável para enviar a ficha sem exigir login.'}
+                                </p>
                             </div>
                         )}
                     </CardHeader>
@@ -789,6 +841,18 @@ export default function WorksheetsPage({
                                             Questões:
                                         </span>{' '}
                                         {worksheet.question_count}
+                                    </div>
+                                    <div>
+                                        <span className="font-medium text-foreground">
+                                            Compartilhamentos:
+                                        </span>{' '}
+                                        {worksheet.share_link_copies_count ?? 0}
+                                    </div>
+                                    <div>
+                                        <span className="font-medium text-foreground">
+                                            Aberturas do link:
+                                        </span>{' '}
+                                        {worksheet.share_link_visits_count ?? 0}
                                     </div>
                                     {answerStyleLabel && (
                                         <div>

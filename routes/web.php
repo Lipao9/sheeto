@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\WorksheetController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -21,8 +22,12 @@ Route::middleware('guest')->group(function () {
         ->name('auth.google.callback');
 });
 
+Route::get('fichas/compartilhada/{worksheet}', [WorksheetController::class, 'shared'])
+    ->middleware('signed')
+    ->name('worksheets.shared.show');
+
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', fn () => to_route('worksheets.index'))
+    Route::get('dashboard', DashboardController::class)
         ->name('dashboard');
 
     Route::get('fichas', [WorksheetController::class, 'index'])
@@ -33,6 +38,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('fichas', [WorksheetController::class, 'store'])
         ->name('worksheets.store');
+
+    Route::post('fichas/{worksheet}/compartilhar', [WorksheetController::class, 'trackShareClick'])
+        ->name('worksheets.share.click');
 
     Route::delete('fichas/{worksheet}', [WorksheetController::class, 'destroy'])
         ->name('worksheets.destroy');

@@ -45,6 +45,8 @@ class WorksheetFactory extends Factory
                 : null,
             'notes' => fake()->sentence(),
             'content' => fake()->paragraphs(3, true),
+            'share_link_copies_count' => 0,
+            'share_link_visits_count' => 0,
         ];
     }
 }
