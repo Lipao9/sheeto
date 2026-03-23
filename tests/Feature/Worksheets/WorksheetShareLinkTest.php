@@ -37,6 +37,8 @@ test('user cannot register share click for worksheet owned by another user', fun
 });
 
 test('signed share link renders shared worksheet and tracks open event', function () {
+    $this->withoutVite();
+
     $worksheet = Worksheet::factory()->create([
         'share_link_visits_count' => 0,
     ]);
