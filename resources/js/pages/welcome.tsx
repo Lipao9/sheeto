@@ -2,57 +2,78 @@ import { login, register } from '@/routes';
 import { index as worksheetsIndex } from '@/routes/worksheets';
 import { type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
+import {
+    BookOpen,
+    Brain,
+    CheckCircle2,
+    ClipboardList,
+    FileText,
+    Sparkles,
+    Target,
+    Zap,
+} from 'lucide-react';
 import { type CSSProperties } from 'react';
+
+const features = [
+    {
+        icon: ClipboardList,
+        title: 'Listas de exercícios',
+        description:
+            'Gere listas personalizadas com IA. Escolha disciplina, tema, dificuldade e tipo de questão.',
+        color: 'var(--sheeto-accent)',
+    },
+    {
+        icon: Brain,
+        title: 'Resumos inteligentes',
+        description:
+            'Transforme conteúdos longos em resumos claros e objetivos para revisão rápida.',
+        color: 'var(--sheeto-accent-2)',
+        soon: true,
+    },
+    {
+        icon: Target,
+        title: 'Simulados personalizados',
+        description:
+            'Monte simulados sob medida para se preparar para provas e vestibulares.',
+        color: 'var(--sheeto-accent-3)',
+        soon: true,
+    },
+    {
+        icon: FileText,
+        title: 'Flashcards',
+        description:
+            'Crie cartões de memorização para fixar conceitos e fórmulas importantes.',
+        color: 'var(--sheeto-accent)',
+        soon: true,
+    },
+];
 
 const steps = [
     {
-        title: 'Descreva a turma e o objetivo',
+        number: '01',
+        title: 'Escolha a ferramenta',
         description:
-            'Você informa disciplina, tema, dificuldade e o tipo de exercício que quer trabalhar.',
+            'Selecione entre listas de exercícios, resumos, simulados ou flashcards.',
     },
     {
-        title: 'A IA monta a ficha completa',
+        number: '02',
+        title: 'Descreva o conteúdo',
         description:
-            'O Sheeto organiza questões, opções e gabarito em um layout pronto para revisar.',
+            'Informe disciplina, tema, nível de dificuldade e o que precisa praticar.',
     },
     {
-        title: 'Revise e compartilhe',
+        number: '03',
+        title: 'Receba e pratique',
         description:
-            'Ajuste o que quiser, copie, imprima em PDF ou envie direto para o aluno.',
+            'A IA gera o material em segundos. Revise, pratique e acompanhe seu progresso.',
     },
 ];
 
-const highlights = [
-    {
-        title: 'Conteúdo sob medida',
-        description:
-            'Fichas alinhadas ao nível do estudante, com equilíbrio entre teoria e prática.',
-    },
-    {
-        title: 'Controle pedagógico',
-        description:
-            'Escolha formatos, número de questões e estilo do gabarito em poucos cliques.',
-    },
-    {
-        title: 'Histórico inteligente',
-        description:
-            'Tudo fica salvo para reaproveitar, duplicar ou ajustar sem retrabalho.',
-    },
-];
-
-const statItems = [
-    {
-        label: 'Tempo médio por ficha',
-        value: '3 min',
-    },
-    {
-        label: 'Modelos combináveis',
-        value: '12+',
-    },
-    {
-        label: 'Tipos de questão',
-        value: '4 tipos',
-    },
+const benefits = [
+    'Material personalizado para o seu nível',
+    'Gabaritos com explicações detalhadas',
+    'Histórico salvo para revisitar quando quiser',
+    'Funciona para qualquer disciplina e nível escolar',
 ];
 
 export default function Welcome({
@@ -81,7 +102,7 @@ export default function Welcome({
             className="relative min-h-screen overflow-hidden bg-[var(--sheeto-canvas)] text-[var(--sheeto-ink)]"
             style={themeStyles}
         >
-            <Head title="Sheeto">
+            <Head title="Sheeto — Sua plataforma de estudos com IA">
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link
                     href="https://fonts.bunny.net/css?family=space-grotesk:400,500,600,700|fraunces:600,700"
@@ -89,267 +110,350 @@ export default function Welcome({
                 />
             </Head>
 
+            {/* Background decorations */}
             <div className="absolute inset-0 -z-10">
-                <div className="absolute -top-32 left-1/2 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,var(--sheeto-glow)_0%,transparent_65%)] blur-3xl" />
-                <div className="absolute left-[-8rem] top-24 h-[22rem] w-[22rem] rounded-full bg-[radial-gradient(circle,var(--sheeto-glow-2)_0%,transparent_70%)] blur-3xl" />
-                <div className="absolute bottom-[-6rem] right-[-4rem] h-[22rem] w-[22rem] rounded-full bg-[radial-gradient(circle,var(--sheeto-accent-3)_0%,transparent_65%)] blur-3xl" />
-                <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.9)_0%,rgba(255,255,255,0.2)_40%,rgba(255,255,255,0.85)_100%)]" />
-                <div className="absolute inset-0 opacity-40 [background-image:linear-gradient(90deg,var(--sheeto-grid)_1px,transparent_1px),linear-gradient(0deg,var(--sheeto-grid)_1px,transparent_1px)] [background-size:28px_28px]" />
+                <div className="absolute -top-40 left-1/2 h-[36rem] w-[36rem] -translate-x-1/2 rounded-full bg-[radial-gradient(circle,var(--sheeto-glow)_0%,transparent_65%)] blur-3xl" />
+                <div className="absolute left-[-10rem] top-32 h-[24rem] w-[24rem] rounded-full bg-[radial-gradient(circle,var(--sheeto-glow-2)_0%,transparent_70%)] blur-3xl" />
+                <div className="absolute bottom-[-8rem] right-[-6rem] h-[24rem] w-[24rem] rounded-full bg-[radial-gradient(circle,var(--sheeto-accent-3)_0%,transparent_65%)] opacity-60 blur-3xl" />
+                <div className="absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.92)_0%,rgba(255,255,255,0.15)_45%,rgba(255,255,255,0.88)_100%)]" />
+                <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(90deg,var(--sheeto-grid)_1px,transparent_1px),linear-gradient(0deg,var(--sheeto-grid)_1px,transparent_1px)] [background-size:32px_32px]" />
             </div>
 
-            <div className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 pb-20 pt-8 md:px-10">
-                <header className="flex flex-col gap-6">
-                    <div className="flex items-center justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                            <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--sheeto-ink)] text-sm font-bold uppercase tracking-[0.2em] text-[var(--sheeto-canvas)]">
-                                Sh
-                            </span>
-                            <div>
-                                <p className="text-xs uppercase tracking-[0.3em] text-[var(--sheeto-accent)]">
-                                    Sheeto
-                                </p>
-                                <p className="text-sm text-[color:rgba(29,27,23,0.7)]">
-                                    Fichas inteligentes para professores.
-                                </p>
-                            </div>
-                        </div>
+            {/* Header */}
+            <header className="relative z-10 mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-6 md:px-10">
+                <div className="flex items-center gap-3">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-[var(--sheeto-ink)] text-sm font-bold uppercase tracking-[0.2em] text-[var(--sheeto-canvas)]">
+                        Sh
+                    </span>
+                    <span className="text-lg font-semibold tracking-tight text-[var(--sheeto-ink)]">
+                        Sheeto
+                    </span>
+                </div>
 
-                        <nav className="hidden items-center gap-3 md:flex">
-                            {isAuthenticated ? (
+                <nav className="flex items-center gap-3">
+                    {isAuthenticated ? (
+                        <Link
+                            href={worksheetsIndex()}
+                            className="rounded-full bg-[var(--sheeto-ink)] px-5 py-2.5 text-sm font-semibold text-[var(--sheeto-canvas)] shadow-[0_12px_30px_-18px_var(--sheeto-shadow)] transition hover:-translate-y-0.5"
+                        >
+                            Ir para o painel
+                        </Link>
+                    ) : (
+                        <>
+                            <Link
+                                href={login()}
+                                className="hidden rounded-full border border-[color:rgba(29,27,23,0.2)] px-5 py-2.5 text-sm font-semibold text-[var(--sheeto-ink)] transition hover:border-[var(--sheeto-ink)] sm:inline-flex"
+                            >
+                                Entrar
+                            </Link>
+                            {canRegister && (
                                 <Link
-                                    href={worksheetsIndex()}
-                                    className="rounded-full bg-[var(--sheeto-ink)] px-5 py-2 text-sm font-semibold text-[var(--sheeto-canvas)] shadow-[0_12px_30px_-18px_var(--sheeto-shadow)] transition hover:-translate-y-0.5"
+                                    href={register()}
+                                    className="rounded-full bg-[var(--sheeto-ink)] px-5 py-2.5 text-sm font-semibold text-[var(--sheeto-canvas)] shadow-[0_12px_30px_-18px_var(--sheeto-shadow)] transition hover:-translate-y-0.5"
                                 >
-                                    Acessar fichas
+                                    Criar conta grátis
                                 </Link>
-                            ) : (
-                                <>
-                                    <Link
-                                        href={login()}
-                                        className="rounded-full border border-[color:rgba(29,27,23,0.2)] px-5 py-2 text-sm font-semibold text-[var(--sheeto-ink)] transition hover:border-[var(--sheeto-ink)]"
-                                    >
-                                        Entrar
-                                    </Link>
-                                    {canRegister && (
-                                        <Link
-                                            href={register()}
-                                            className="rounded-full bg-[var(--sheeto-ink)] px-5 py-2 text-sm font-semibold text-[var(--sheeto-canvas)] shadow-[0_12px_30px_-18px_var(--sheeto-shadow)] transition hover:-translate-y-0.5"
-                                        >
-                                            Criar conta
-                                        </Link>
-                                    )}
-                                </>
                             )}
-                        </nav>
+                        </>
+                    )}
+                </nav>
+            </header>
+
+            <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-24 px-6 pb-24 pt-8 md:px-10">
+                {/* Hero */}
+                <section className="flex flex-col items-center gap-8 text-center">
+                    <div className="flex items-center gap-2 rounded-full border border-[color:rgba(29,27,23,0.12)] bg-[var(--sheeto-card)] px-4 py-1.5 shadow-[0_8px_20px_-16px_var(--sheeto-shadow)]">
+                        <Sparkles className="size-4 text-[var(--sheeto-accent)]" />
+                        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--sheeto-accent)]">
+                            Plataforma de estudos com IA
+                        </span>
                     </div>
-                </header>
 
-                <main className="flex flex-col gap-16">
-                    <section className="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr]">
-                        <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-6 duration-700">
-                            <p className="inline-flex w-fit items-center gap-2 rounded-full bg-[var(--sheeto-card)] px-4 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-[var(--sheeto-accent)] shadow-[0_16px_30px_-20px_var(--sheeto-shadow)]">
-                                IA aplicada ao ensino
-                            </p>
-                            <h1 className="text-4xl font-semibold leading-tight text-[var(--sheeto-ink)] md:text-5xl"
-                                style={{ fontFamily: '"Fraunces", serif' }}
+                    <h1
+                        className="max-w-3xl text-4xl font-semibold leading-[1.15] text-[var(--sheeto-ink)] md:text-6xl"
+                        style={{ fontFamily: '"Fraunces", serif' }}
+                    >
+                        Estude de forma mais
+                        <span className="relative inline-block">
+                            <span className="relative z-10"> inteligente</span>
+                            <span className="absolute bottom-1 left-0 -z-0 h-3 w-full bg-[var(--sheeto-accent)]/20 md:bottom-2 md:h-4" />
+                        </span>
+                        , não mais difícil.
+                    </h1>
+
+                    <p className="max-w-2xl text-lg text-[color:rgba(29,27,23,0.65)] md:text-xl">
+                        O Sheeto usa inteligência artificial para gerar listas de exercícios, resumos e
+                        materiais de estudo personalizados para o seu nível. Tudo em poucos cliques.
+                    </p>
+
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                        {isAuthenticated ? (
+                            <Link
+                                href={worksheetsIndex()}
+                                className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--sheeto-accent)] px-8 py-3.5 text-sm font-semibold text-white shadow-[0_16px_30px_-12px_var(--sheeto-accent)] transition hover:-translate-y-0.5 hover:shadow-[0_20px_40px_-12px_var(--sheeto-accent)]"
                             >
-                                O Sheeto transforma instruções simples em fichas de estudo prontas para praticar.
-                            </h1>
-                            <p className="max-w-xl text-base text-[color:rgba(29,27,23,0.7)] md:text-lg">
-                                A plataforma organiza perguntas, gabaritos e níveis de dificuldade para você ganhar
-                                tempo sem perder tempo. Tudo com uma estética clara e
-                                elegante.
-                            </p>
-                            <div className="flex flex-col gap-3 sm:flex-row">
-                                {isAuthenticated ? (
-                                    <Link
-                                        href={worksheetsIndex()}
-                                        className="inline-flex items-center justify-center rounded-full bg-[var(--sheeto-accent)] px-6 py-3 text-sm font-semibold text-white shadow-[0_16px_30px_-18px_var(--sheeto-accent)] transition hover:-translate-y-0.5"
-                                    >
-                                        Acessar minhas fichas
-                                    </Link>
-                                ) : (
-                                    <>
-                                        <Link
-                                            href={login()}
-                                            className="inline-flex items-center justify-center rounded-full bg-[var(--sheeto-accent)] px-6 py-3 text-sm font-semibold text-white shadow-[0_16px_30px_-18px_var(--sheeto-accent)] transition hover:-translate-y-0.5"
-                                        >
-                                            Entrar no Sheeto
-                                        </Link>
-                                        {canRegister && (
-                                            <Link
-                                                href={register()}
-                                                className="inline-flex items-center justify-center rounded-full border border-[color:rgba(29,27,23,0.2)] px-6 py-3 text-sm font-semibold text-[var(--sheeto-ink)] transition hover:border-[var(--sheeto-ink)]"
-                                            >
-                                                Criar conta gratuita
-                                            </Link>
-                                        )}
-                                    </>
-                                )}
-                            </div>
-                            <div className="grid gap-4 rounded-3xl border border-[color:rgba(29,27,23,0.12)] bg-[var(--sheeto-card)] p-5 text-sm text-[color:rgba(29,27,23,0.75)] shadow-[0_16px_30px_-24px_var(--sheeto-shadow)] md:max-w-lg">
-                                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--sheeto-accent-2)]">
-                                    O que é o Sheeto
-                                </p>
-                                <p>
-                                    Sheeto é um gerador de fichas de estudo pensado para alunos e professores que
-                                    precisam preparar atividades rápidas, mas bem estruturadas. Você define o contexto e
-                                    a IA entrega uma ficha alinhada ao seu objetivo.
-                                </p>
-                            </div>
-                        </div>
-
-                        <div className="relative animate-in fade-in slide-in-from-bottom-6 duration-700 delay-150">
-                            <div className="absolute -inset-4 -z-10 rounded-[32px] bg-[radial-gradient(circle,var(--sheeto-glow)_0%,transparent_65%)] blur-2xl" />
-                            <div className="rounded-[28px] border border-[color:rgba(29,27,23,0.18)] bg-[var(--sheeto-card)] p-6 shadow-[0_24px_50px_-30px_var(--sheeto-shadow)]">
-                                <div className="flex items-center justify-between">
-                                    <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[var(--sheeto-accent-2)]">
-                                        Prévia da ficha
-                                    </p>
-                                    <span className="rounded-full bg-[color:rgba(29,27,23,0.08)] px-3 py-1 text-xs font-semibold text-[var(--sheeto-ink)]">
-                                        História • 8º ano
-                                    </span>
-                                </div>
-                                <div className="mt-5 space-y-3">
-                                    <div className="rounded-2xl border border-[color:rgba(29,27,23,0.12)] bg-white/70 p-4">
-                                        <p className="text-sm font-semibold text-[var(--sheeto-ink)]">
-                                            Tema: Revolução Industrial
-                                        </p>
-                                        <p className="mt-2 text-sm text-[color:rgba(29,27,23,0.7)]">
-                                            10 questões, objetivas e discursivas. Gabarito com explicações.
-                                        </p>
-                                    </div>
-                                    <div className="grid gap-3 sm:grid-cols-2">
-                                        {statItems.map((item) => (
-                                            <div
-                                                key={item.label}
-                                                className="rounded-2xl border border-[color:rgba(29,27,23,0.12)] bg-white/70 p-4"
-                                            >
-                                                <p className="text-xs uppercase tracking-[0.22em] text-[color:rgba(29,27,23,0.55)]">
-                                                    {item.label}
-                                                </p>
-                                                <p className="mt-2 text-lg font-semibold text-[var(--sheeto-ink)]">
-                                                    {item.value}
-                                                </p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section className="grid gap-6 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
-                        <div className="flex flex-col gap-2">
-                            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--sheeto-accent)]">
-                                Como funciona
-                            </p>
-                            <h2
-                                className="text-3xl font-semibold text-[var(--sheeto-ink)]"
-                                style={{ fontFamily: '"Fraunces", serif' }}
-                            >
-                                Um fluxo simples, pensado para o ritmo da escola.
-                            </h2>
-                        </div>
-                        <div className="grid gap-4 lg:grid-cols-3">
-                            {steps.map((step, index) => (
-                                <div
-                                    key={step.title}
-                                    className="flex h-full flex-col gap-3 rounded-3xl border border-[color:rgba(29,27,23,0.12)] bg-[var(--sheeto-card)] p-6 shadow-[0_18px_35px_-26px_var(--sheeto-shadow)] transition hover:-translate-y-1"
-                                >
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--sheeto-accent-2)]">
-                                            Passo {index + 1}
-                                        </span>
-                                        <span className="h-10 w-10 rounded-2xl bg-[var(--sheeto-ink)] text-center text-sm font-semibold leading-10 text-[var(--sheeto-canvas)]">
-                                            {index + 1}
-                                        </span>
-                                    </div>
-                                    <h3 className="text-lg font-semibold text-[var(--sheeto-ink)]">
-                                        {step.title}
-                                    </h3>
-                                    <p className="text-sm text-[color:rgba(29,27,23,0.7)]">
-                                        {step.description}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-
-                    <section className="grid gap-6 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-300">
-                        <div className="flex flex-col gap-2">
-                            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--sheeto-accent-2)]">
-                                Identidade Sheeto
-                            </p>
-                            <h2
-                                className="text-3xl font-semibold text-[var(--sheeto-ink)]"
-                                style={{ fontFamily: '"Fraunces", serif' }}
-                            >
-                                Clareza visual, ritmo pedagógico e elegância funcional.
-                            </h2>
-                        </div>
-                        <div className="grid gap-4 md:grid-cols-3">
-                            {highlights.map((item) => (
-                                <div
-                                    key={item.title}
-                                    className="rounded-3xl border border-[color:rgba(29,27,23,0.12)] bg-[var(--sheeto-card)] p-6 shadow-[0_18px_35px_-26px_var(--sheeto-shadow)]"
-                                >
-                                    <h3 className="text-lg font-semibold text-[var(--sheeto-ink)]">
-                                        {item.title}
-                                    </h3>
-                                    <p className="mt-2 text-sm text-[color:rgba(29,27,23,0.7)]">
-                                        {item.description}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-
-                    <section className="flex flex-col gap-6 rounded-[36px] border border-[color:rgba(29,27,23,0.14)] bg-[var(--sheeto-ink)] px-6 py-10 text-[var(--sheeto-canvas)] shadow-[0_24px_50px_-30px_var(--sheeto-shadow)] animate-in fade-in slide-in-from-bottom-6 duration-700 delay-500 md:px-12">
-                        <div className="flex flex-col gap-3">
-                            <p className="text-xs font-semibold uppercase tracking-[0.35em] text-[var(--sheeto-accent-3)]">
-                                Pronto para começar
-                            </p>
-                            <h2
-                                className="text-3xl font-semibold"
-                                style={{ fontFamily: '"Fraunces", serif' }}
-                            >
-                                Crie fichas gratuitas em minutos.
-                            </h2>
-                            <p className="max-w-2xl text-sm text-[color:rgba(246,241,234,0.8)]">
-                                Entre no Sheeto e mantenha suas listas organizadas por disciplina, com histórico e
-                                gabaritos fáceis de compartilhar.
-                            </p>
-                        </div>
-                        <div className="flex flex-col gap-3 sm:flex-row">
-                            {isAuthenticated ? (
+                                <Zap className="size-4" />
+                                Acessar o painel
+                            </Link>
+                        ) : (
+                            <>
                                 <Link
-                                    href={worksheetsIndex()}
-                                    className="inline-flex items-center justify-center rounded-full bg-[var(--sheeto-accent-3)] px-6 py-3 text-sm font-semibold text-[var(--sheeto-ink)] transition hover:-translate-y-0.5"
+                                    href={register()}
+                                    className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--sheeto-accent)] px-8 py-3.5 text-sm font-semibold text-white shadow-[0_16px_30px_-12px_var(--sheeto-accent)] transition hover:-translate-y-0.5 hover:shadow-[0_20px_40px_-12px_var(--sheeto-accent)]"
                                 >
-                                    Acessar listas
+                                    <Zap className="size-4" />
+                                    Começar agora — é grátis
                                 </Link>
-                            ) : (
-                                <>
-                                    <Link
-                                        href={login()}
-                                        className="inline-flex items-center justify-center rounded-full bg-[var(--sheeto-accent-3)] px-6 py-3 text-sm font-semibold text-[var(--sheeto-ink)] transition hover:-translate-y-0.5"
+                                <Link
+                                    href={login()}
+                                    className="inline-flex items-center justify-center rounded-full border border-[color:rgba(29,27,23,0.2)] px-8 py-3.5 text-sm font-semibold text-[var(--sheeto-ink)] transition hover:border-[var(--sheeto-ink)]"
+                                >
+                                    Já tenho conta
+                                </Link>
+                            </>
+                        )}
+                    </div>
+
+                    {/* Hero preview card */}
+                    <div className="mt-4 w-full max-w-3xl">
+                        <div className="rounded-[28px] border border-[color:rgba(29,27,23,0.14)] bg-[var(--sheeto-card)] p-6 shadow-[0_32px_60px_-30px_var(--sheeto-shadow)] md:p-8">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="flex size-10 items-center justify-center rounded-2xl bg-[var(--sheeto-accent)]/10">
+                                        <ClipboardList className="size-5 text-[var(--sheeto-accent)]" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-semibold text-[var(--sheeto-ink)]">
+                                            Lista de exercícios
+                                        </p>
+                                        <p className="text-xs text-[color:rgba(29,27,23,0.55)]">
+                                            Gerada com IA em segundos
+                                        </p>
+                                    </div>
+                                </div>
+                                <span className="rounded-full bg-[var(--sheeto-accent-2)]/10 px-3 py-1 text-xs font-semibold text-[var(--sheeto-accent-2)]">
+                                    Matemática • 9º ano
+                                </span>
+                            </div>
+                            <div className="mt-5 grid gap-3 md:grid-cols-3">
+                                <div className="rounded-2xl border border-[color:rgba(29,27,23,0.1)] bg-white/60 p-4">
+                                    <p className="text-xs uppercase tracking-[0.2em] text-[color:rgba(29,27,23,0.5)]">
+                                        Questões
+                                    </p>
+                                    <p className="mt-1.5 text-2xl font-semibold text-[var(--sheeto-ink)]">
+                                        10
+                                    </p>
+                                </div>
+                                <div className="rounded-2xl border border-[color:rgba(29,27,23,0.1)] bg-white/60 p-4">
+                                    <p className="text-xs uppercase tracking-[0.2em] text-[color:rgba(29,27,23,0.5)]">
+                                        Dificuldade
+                                    </p>
+                                    <p className="mt-1.5 text-2xl font-semibold text-[var(--sheeto-accent)]">
+                                        Médio
+                                    </p>
+                                </div>
+                                <div className="rounded-2xl border border-[color:rgba(29,27,23,0.1)] bg-white/60 p-4">
+                                    <p className="text-xs uppercase tracking-[0.2em] text-[color:rgba(29,27,23,0.5)]">
+                                        Tempo
+                                    </p>
+                                    <p className="mt-1.5 text-2xl font-semibold text-[var(--sheeto-accent-2)]">
+                                        ~3 min
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="mt-4 space-y-2">
+                                {[
+                                    'Resolva a equação 2x + 5 = 15.',
+                                    'Calcule a área de um triângulo com base 8cm e altura 5cm.',
+                                    'Simplifique a expressão 3(2x - 4) + 2(x + 1).',
+                                ].map((q, i) => (
+                                    <div
+                                        key={i}
+                                        className="flex items-start gap-3 rounded-xl border border-[color:rgba(29,27,23,0.08)] bg-white/40 px-4 py-3"
                                     >
-                                        Entrar no Sheeto
-                                    </Link>
-                                    {canRegister && (
-                                        <Link
-                                            href={register()}
-                                            className="inline-flex items-center justify-center rounded-full border border-[color:rgba(246,241,234,0.4)] px-6 py-3 text-sm font-semibold text-[var(--sheeto-canvas)] transition hover:border-[var(--sheeto-canvas)]"
-                                        >
-                                            Criar conta
-                                        </Link>
-                                    )}
-                                </>
-                            )}
+                                        <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-[var(--sheeto-ink)] text-xs font-semibold text-[var(--sheeto-canvas)]">
+                                            {i + 1}
+                                        </span>
+                                        <p className="text-sm text-[color:rgba(29,27,23,0.75)]">
+                                            {q}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </section>
-                </main>
+                    </div>
+                </section>
+
+                {/* Features */}
+                <section className="flex flex-col gap-10">
+                    <div className="flex flex-col items-center gap-3 text-center">
+                        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--sheeto-accent)]">
+                            Ferramentas
+                        </p>
+                        <h2
+                            className="max-w-xl text-3xl font-semibold text-[var(--sheeto-ink)] md:text-4xl"
+                            style={{ fontFamily: '"Fraunces", serif' }}
+                        >
+                            Tudo que você precisa para estudar melhor.
+                        </h2>
+                    </div>
+                    <div className="grid gap-5 md:grid-cols-2">
+                        {features.map((feature) => (
+                            <div
+                                key={feature.title}
+                                className="group relative flex flex-col gap-4 rounded-3xl border border-[color:rgba(29,27,23,0.1)] bg-[var(--sheeto-card)] p-6 shadow-[0_16px_35px_-26px_var(--sheeto-shadow)] transition hover:-translate-y-1 hover:shadow-[0_24px_50px_-24px_var(--sheeto-shadow)] md:p-8"
+                            >
+                                {feature.soon && (
+                                    <span className="absolute right-6 top-6 rounded-full bg-[var(--sheeto-accent-3)]/15 px-3 py-1 text-xs font-semibold text-[var(--sheeto-accent-3)]">
+                                        Em breve
+                                    </span>
+                                )}
+                                <div
+                                    className="flex size-12 items-center justify-center rounded-2xl"
+                                    style={{ backgroundColor: `color-mix(in srgb, ${feature.color} 12%, transparent)` }}
+                                >
+                                    <feature.icon
+                                        className="size-6"
+                                        style={{ color: feature.color }}
+                                    />
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <h3 className="text-lg font-semibold text-[var(--sheeto-ink)]">
+                                        {feature.title}
+                                    </h3>
+                                    <p className="text-sm leading-relaxed text-[color:rgba(29,27,23,0.65)]">
+                                        {feature.description}
+                                    </p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                {/* How it works */}
+                <section className="flex flex-col gap-10">
+                    <div className="flex flex-col items-center gap-3 text-center">
+                        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--sheeto-accent-2)]">
+                            Como funciona
+                        </p>
+                        <h2
+                            className="max-w-xl text-3xl font-semibold text-[var(--sheeto-ink)] md:text-4xl"
+                            style={{ fontFamily: '"Fraunces", serif' }}
+                        >
+                            Simples, rápido e feito para o seu ritmo.
+                        </h2>
+                    </div>
+                    <div className="grid gap-6 lg:grid-cols-3">
+                        {steps.map((step) => (
+                            <div
+                                key={step.number}
+                                className="relative flex flex-col gap-4 rounded-3xl border border-[color:rgba(29,27,23,0.1)] bg-[var(--sheeto-card)] p-6 shadow-[0_16px_35px_-26px_var(--sheeto-shadow)] transition hover:-translate-y-1 md:p-8"
+                            >
+                                <span
+                                    className="text-5xl font-bold text-[var(--sheeto-accent)]/15"
+                                    style={{ fontFamily: '"Fraunces", serif' }}
+                                >
+                                    {step.number}
+                                </span>
+                                <h3 className="text-lg font-semibold text-[var(--sheeto-ink)]">
+                                    {step.title}
+                                </h3>
+                                <p className="text-sm leading-relaxed text-[color:rgba(29,27,23,0.65)]">
+                                    {step.description}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                {/* Benefits */}
+                <section className="flex flex-col items-center gap-8 text-center">
+                    <div className="flex flex-col items-center gap-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--sheeto-accent-3)]">
+                            Por que o Sheeto
+                        </p>
+                        <h2
+                            className="max-w-xl text-3xl font-semibold text-[var(--sheeto-ink)] md:text-4xl"
+                            style={{ fontFamily: '"Fraunces", serif' }}
+                        >
+                            Feito por estudantes, para estudantes.
+                        </h2>
+                        <p className="max-w-lg text-base text-[color:rgba(29,27,23,0.6)]">
+                            Sabemos como é difícil encontrar material de qualidade. O Sheeto resolve isso com IA.
+                        </p>
+                    </div>
+                    <div className="grid w-full max-w-lg gap-4 text-left">
+                        {benefits.map((benefit) => (
+                            <div
+                                key={benefit}
+                                className="flex items-center gap-4 rounded-2xl border border-[color:rgba(29,27,23,0.1)] bg-[var(--sheeto-card)] px-5 py-4 shadow-[0_8px_20px_-16px_var(--sheeto-shadow)]"
+                            >
+                                <CheckCircle2 className="size-5 shrink-0 text-[var(--sheeto-accent-2)]" />
+                                <span className="text-sm font-medium text-[var(--sheeto-ink)]">
+                                    {benefit}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                {/* CTA */}
+                <section className="flex flex-col items-center gap-8 rounded-[36px] border border-[color:rgba(29,27,23,0.14)] bg-[var(--sheeto-ink)] px-6 py-14 text-center text-[var(--sheeto-canvas)] shadow-[0_32px_60px_-30px_var(--sheeto-shadow)] md:px-12">
+                    <div className="flex flex-col items-center gap-4">
+                        <BookOpen className="size-10 text-[var(--sheeto-accent-3)]" />
+                        <h2
+                            className="max-w-lg text-3xl font-semibold md:text-4xl"
+                            style={{ fontFamily: '"Fraunces", serif' }}
+                        >
+                            Pronto para estudar de verdade?
+                        </h2>
+                        <p className="max-w-md text-sm text-[color:rgba(246,241,234,0.7)]">
+                            Crie sua conta e comece a gerar materiais de estudo personalizados em minutos. Sem complicação.
+                        </p>
+                    </div>
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                        {isAuthenticated ? (
+                            <Link
+                                href={worksheetsIndex()}
+                                className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--sheeto-accent-3)] px-8 py-3.5 text-sm font-semibold text-[var(--sheeto-ink)] transition hover:-translate-y-0.5"
+                            >
+                                <Zap className="size-4" />
+                                Acessar o painel
+                            </Link>
+                        ) : (
+                            <>
+                                <Link
+                                    href={register()}
+                                    className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--sheeto-accent-3)] px-8 py-3.5 text-sm font-semibold text-[var(--sheeto-ink)] transition hover:-translate-y-0.5"
+                                >
+                                    <Zap className="size-4" />
+                                    Criar conta gratuita
+                                </Link>
+                                <Link
+                                    href={login()}
+                                    className="inline-flex items-center justify-center rounded-full border border-[color:rgba(246,241,234,0.3)] px-8 py-3.5 text-sm font-semibold text-[var(--sheeto-canvas)] transition hover:border-[var(--sheeto-canvas)]"
+                                >
+                                    Entrar
+                                </Link>
+                            </>
+                        )}
+                    </div>
+                </section>
+
+                {/* Footer */}
+                <footer className="flex flex-col items-center gap-2 text-center">
+                    <div className="flex items-center gap-2">
+                        <span className="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-[var(--sheeto-ink)] text-[10px] font-bold uppercase tracking-[0.15em] text-[var(--sheeto-canvas)]">
+                            Sh
+                        </span>
+                        <span className="text-sm font-semibold text-[var(--sheeto-ink)]">
+                            Sheeto
+                        </span>
+                    </div>
+                    <p className="text-xs text-[color:rgba(29,27,23,0.45)]">
+                        Plataforma de estudos com inteligência artificial.
+                    </p>
+                </footer>
             </div>
         </div>
     );

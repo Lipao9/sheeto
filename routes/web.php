@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\WorksheetController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -26,7 +27,7 @@ Route::get('fichas/compartilhada/{worksheet}', [WorksheetController::class, 'sha
     ->name('worksheets.shared.show');
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('dashboard', fn () => to_route('worksheets.index'))
+    Route::get('dashboard', DashboardController::class)
         ->name('dashboard');
 
     Route::get('fichas', [WorksheetController::class, 'index'])

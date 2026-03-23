@@ -407,6 +407,7 @@ export default function WorksheetsCreatePage() {
                                                 </section>
                                             )}
 
+                                            {!isDocumentMode && (
                                             <section className={sectionCardClassName}>
                                                 <div className="mb-4 flex items-start justify-between gap-3">
                                                     <div className="flex items-start gap-3">
@@ -506,16 +507,8 @@ export default function WorksheetsCreatePage() {
 
                                                 <div className="mt-4 grid gap-4 md:grid-cols-2">
                                                     <div className="grid gap-2">
-                                                        <Label
-                                                            htmlFor="discipline"
-                                                            className="flex items-center justify-between gap-2"
-                                                        >
+                                                        <Label htmlFor="discipline">
                                                             Disciplina
-                                                            {isDocumentMode && (
-                                                                <span className="text-xs font-normal text-muted-foreground">
-                                                                    Opcional
-                                                                </span>
-                                                            )}
                                                         </Label>
                                                         <Input
                                                             id="discipline"
@@ -528,14 +521,12 @@ export default function WorksheetsCreatePage() {
                                                                         .value,
                                                                 )
                                                             }
-                                                            required={!isDocumentMode}
+                                                            required
                                                             autoComplete="off"
                                                             className="bg-background"
                                                         />
                                                         <p className="text-xs text-muted-foreground">
-                                                            {isDocumentMode
-                                                                ? 'Se não informar, a disciplina será inferida a partir do documento.'
-                                                                : 'Use uma disciplina específica para melhorar o resultado.'}
+                                                            Use uma disciplina específica para melhorar o resultado.
                                                         </p>
                                                         <InputError
                                                             message={errors.discipline}
@@ -543,16 +534,8 @@ export default function WorksheetsCreatePage() {
                                                     </div>
 
                                                     <div className="grid gap-2">
-                                                        <Label
-                                                            htmlFor="topic"
-                                                            className="flex items-center justify-between gap-2"
-                                                        >
+                                                        <Label htmlFor="topic">
                                                             Tópico
-                                                            {isDocumentMode && (
-                                                                <span className="text-xs font-normal text-muted-foreground">
-                                                                    Opcional
-                                                                </span>
-                                                            )}
                                                         </Label>
                                                         <Input
                                                             id="topic"
@@ -565,14 +548,12 @@ export default function WorksheetsCreatePage() {
                                                                         .value,
                                                                 )
                                                             }
-                                                            required={!isDocumentMode}
+                                                            required
                                                             autoComplete="off"
                                                             className="bg-background"
                                                         />
                                                         <p className="text-xs text-muted-foreground">
-                                                            {isDocumentMode
-                                                                ? 'Se não informar, o tópico será inferido automaticamente.'
-                                                                : 'Quanto mais claro o tópico, melhor a qualidade das questões.'}
+                                                            Quanto mais claro o tópico, melhor a qualidade das questões.
                                                         </p>
                                                         <InputError
                                                             message={errors.topic}
@@ -636,6 +617,7 @@ export default function WorksheetsCreatePage() {
                                                     )}
                                                 </div>
                                             </section>
+                                            )}
 
                                             <section className={sectionCardClassName}>
                                                 <div className="mb-4 flex items-start gap-3">
@@ -644,7 +626,7 @@ export default function WorksheetsCreatePage() {
                                                     </div>
                                                     <div className="space-y-1">
                                                         <h2 className="text-sm font-semibold">
-                                                            4. Formato da ficha
+                                                            {isDocumentMode ? '3' : '4'}. Formato da ficha
                                                         </h2>
                                                         <p className="text-sm text-muted-foreground">
                                                             Controle dificuldade, quantidade e tipo
@@ -932,7 +914,7 @@ export default function WorksheetsCreatePage() {
                                                             </div>
                                                             <div className="space-y-1">
                                                                 <h2 className="text-sm font-semibold">
-                                                                    5. Detalhes extras
+                                                                    {isDocumentMode ? '4' : '5'}. Detalhes extras
                                                                 </h2>
                                                                 <p className="text-sm text-muted-foreground">
                                                                     Opcional: use para orientar tom,
@@ -1070,36 +1052,42 @@ export default function WorksheetsCreatePage() {
                                                         <p className="text-xs uppercase tracking-wide text-muted-foreground">
                                                             Contexto
                                                         </p>
-                                                        <div className="mt-1 grid gap-1 text-sm">
-                                                            <p>
-                                                                Nível:{' '}
-                                                                <span className="font-medium">
-                                                                    {
-                                                                        educationLevelLabels[
-                                                                            educationLevel
-                                                                        ]
-                                                                    }
-                                                                </span>
+                                                        {isDocumentMode ? (
+                                                            <p className="mt-1 text-xs text-muted-foreground">
+                                                                Inferido automaticamente a partir do documento.
                                                             </p>
-                                                            <p>
-                                                                Objetivo:{' '}
-                                                                <span className="font-medium">
-                                                                    {
-                                                                        goalLabels[
-                                                                            goal
-                                                                        ]
-                                                                    }
-                                                                </span>
-                                                            </p>
-                                                            <p>
-                                                                Questões:{' '}
-                                                                <span className="font-medium">
-                                                                    {
-                                                                        questionCount
-                                                                    }
-                                                                </span>
-                                                            </p>
-                                                        </div>
+                                                        ) : (
+                                                            <div className="mt-1 grid gap-1 text-sm">
+                                                                <p>
+                                                                    Nível:{' '}
+                                                                    <span className="font-medium">
+                                                                        {
+                                                                            educationLevelLabels[
+                                                                                educationLevel
+                                                                            ]
+                                                                        }
+                                                                    </span>
+                                                                </p>
+                                                                <p>
+                                                                    Objetivo:{' '}
+                                                                    <span className="font-medium">
+                                                                        {
+                                                                            goalLabels[
+                                                                                goal
+                                                                            ]
+                                                                        }
+                                                                    </span>
+                                                                </p>
+                                                                <p>
+                                                                    Questões:{' '}
+                                                                    <span className="font-medium">
+                                                                        {
+                                                                            questionCount
+                                                                        }
+                                                                    </span>
+                                                                </p>
+                                                            </div>
+                                                        )}
                                                     </div>
 
                                                     <div className="rounded-lg border border-border/70 bg-background/80 p-3">
