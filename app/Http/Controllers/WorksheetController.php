@@ -10,12 +10,22 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class WorksheetController extends Controller
 {
+    public function shared(Worksheet $worksheet): Response
+    {
+        $worksheet->increment('share_link_visits_count');
+
+        return Inertia::render('worksheets/shared', [
+            'worksheet' => $this->presentSharedWorksheet($worksheet),
+        ]);
+    }
+
     public function index(Request $request): Response
     {
         $worksheetId = $request->integer('worksheet');
@@ -115,6 +125,17 @@ class WorksheetController extends Controller
         return to_route('worksheets.index', ['worksheet' => $worksheet->id]);
     }
 
+    public function trackShareClick(Request $request, Worksheet $worksheet): RedirectResponse
+    {
+        if ($worksheet->user_id !== $request->user()?->id) {
+            abort(HttpResponse::HTTP_NOT_FOUND);
+        }
+
+        $worksheet->increment('share_link_copies_count');
+
+        return to_route('worksheets.index', ['worksheet' => $worksheet->id]);
+    }
+
     public function destroy(Request $request, Worksheet $worksheet): RedirectResponse
     {
         if ($worksheet->user_id !== $request->user()?->id) {
@@ -141,6 +162,24 @@ class WorksheetController extends Controller
             'grade_year' => $worksheet->grade_year,
             'semester_period' => $worksheet->semester_period,
             'notes' => $worksheet->notes,
+            'content' => $worksheet->content,
+            'share_url' => URL::signedRoute('worksheets.shared.show', [
+                'worksheet' => $worksheet,
+            ]),
+            'share_link_copies_count' => $worksheet->share_link_copies_count,
+            'share_link_visits_count' => $worksheet->share_link_visits_count,
+            'created_at' => $worksheet->created_at->toIso8601String(),
+        ];
+    }
+
+    private function presentSharedWorksheet(Worksheet $worksheet): array
+    {
+        return [
+            'id' => $worksheet->id,
+            'education_level' => $worksheet->education_level,
+            'discipline' => $worksheet->discipline,
+            'topic' => $worksheet->topic,
+            'question_count' => $worksheet->question_count,
             'content' => $worksheet->content,
             'created_at' => $worksheet->created_at->toIso8601String(),
         ];
