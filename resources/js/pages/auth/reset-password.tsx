@@ -19,7 +19,9 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
             title="Redefinir senha"
             description="Digite sua nova senha abaixo"
         >
-            <Head title="Redefinir senha" />
+            <Head title="Redefinir senha">
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
 
             <Form
                 {...update.form()}
