@@ -144,6 +144,7 @@ class PrepareDocumentForSummary
             ->withToken($apiKey)
             ->acceptJson()
             ->timeout(60)
+            ->retry(3, fn (int $attempt) => $attempt * 5000)
             ->attach('file', $fileHandle, $sourceDocument->getClientOriginalName())
             ->post('files', [
                 'purpose' => 'user_data',
@@ -172,6 +173,7 @@ class PrepareDocumentForSummary
                 ->withToken($apiKey)
                 ->acceptJson()
                 ->timeout(120)
+                ->retry(3, fn (int $attempt) => $attempt * 5000)
                 ->post('responses', [
                     'model' => $model,
                     'temperature' => 0.1,
@@ -332,7 +334,7 @@ PROMPT,
                 ->acceptJson()
                 ->connectTimeout(10)
                 ->timeout(50)
-                ->retry(1, 200)
+                ->retry(3, fn (int $attempt) => $attempt * 5000)
                 ->post('chat/completions', [
                     'model' => $model,
                     'temperature' => 0.1,

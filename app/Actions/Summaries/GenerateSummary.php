@@ -133,7 +133,7 @@ class GenerateSummary
                 ->acceptJson()
                 ->connectTimeout(10)
                 ->timeout(120)
-                ->retry(1, 200)
+                ->retry(3, fn (int $attempt) => $attempt * 5000)
                 ->post('chat/completions', [
                     'model' => $model,
                     'messages' => [
