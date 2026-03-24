@@ -14,6 +14,41 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
+Route::get('sitemap.xml', function () {
+    $urls = [
+        [
+            'loc' => url('/'),
+            'changefreq' => 'weekly',
+            'priority' => '1.0',
+        ],
+        [
+            'loc' => url('/login'),
+            'changefreq' => 'monthly',
+            'priority' => '0.5',
+        ],
+        [
+            'loc' => url('/register'),
+            'changefreq' => 'monthly',
+            'priority' => '0.5',
+        ],
+    ];
+
+    $content = '<?xml version="1.0" encoding="UTF-8"?>';
+    $content .= '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">';
+
+    foreach ($urls as $url) {
+        $content .= '<url>';
+        $content .= '<loc>'.htmlspecialchars($url['loc']).'</loc>';
+        $content .= '<changefreq>'.$url['changefreq'].'</changefreq>';
+        $content .= '<priority>'.$url['priority'].'</priority>';
+        $content .= '</url>';
+    }
+
+    $content .= '</urlset>';
+
+    return response($content, 200, ['Content-Type' => 'application/xml']);
+})->name('sitemap');
+
 Route::middleware('guest')->group(function () {
     Route::get('auth/google/redirect', [GoogleAuthController::class, 'redirect'])
         ->name('auth.google.redirect');

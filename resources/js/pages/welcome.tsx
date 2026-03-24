@@ -102,12 +102,47 @@ export default function Welcome({
             className="relative min-h-screen overflow-hidden bg-[var(--sheeto-canvas)] text-[var(--sheeto-ink)]"
             style={themeStyles}
         >
-            <Head title="Sheeto — Sua plataforma de estudos com IA">
+            <Head title="Sua plataforma de estudos com IA">
+                <meta
+                    name="description"
+                    content="Sheeto usa inteligência artificial para gerar listas de exercícios, resumos e materiais de estudo personalizados. Estude de forma mais inteligente, não mais difícil."
+                />
+                <meta property="og:title" content="Sheeto — Sua plataforma de estudos com IA" />
+                <meta
+                    property="og:description"
+                    content="Gere listas de exercícios, resumos e materiais de estudo personalizados com IA. Funciona para qualquer disciplina e nível escolar."
+                />
+                <meta name="twitter:title" content="Sheeto — Sua plataforma de estudos com IA" />
+                <meta
+                    name="twitter:description"
+                    content="Gere listas de exercícios, resumos e materiais de estudo personalizados com IA. Funciona para qualquer disciplina e nível escolar."
+                />
+                <meta
+                    name="keywords"
+                    content="estudos com IA, listas de exercícios, resumos inteligentes, simulados, flashcards, plataforma de estudos, estudo personalizado"
+                />
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link
                     href="https://fonts.bunny.net/css?family=space-grotesk:400,500,600,700|fraunces:600,700"
                     rel="stylesheet"
                 />
+                <script type="application/ld+json">
+                    {JSON.stringify({
+                        '@context': 'https://schema.org',
+                        '@type': 'WebApplication',
+                        name: 'Sheeto',
+                        description:
+                            'Plataforma de estudos com inteligência artificial que gera listas de exercícios, resumos e materiais personalizados.',
+                        applicationCategory: 'EducationalApplication',
+                        operatingSystem: 'Web',
+                        offers: {
+                            '@type': 'Offer',
+                            price: '0',
+                            priceCurrency: 'BRL',
+                        },
+                        inLanguage: 'pt-BR',
+                    })}
+                </script>
             </Head>
 
             {/* Background decorations */}
@@ -159,9 +194,9 @@ export default function Welcome({
                 </nav>
             </header>
 
-            <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-24 px-6 pt-8 pb-24 md:px-10">
+            <main className="relative z-10 mx-auto flex w-full max-w-6xl flex-col gap-24 px-6 pt-8 pb-24 md:px-10">
                 {/* Hero */}
-                <section className="flex flex-col items-center gap-8 text-center">
+                <section aria-label="Apresentação" className="flex flex-col items-center gap-8 text-center">
                     <div className="flex items-center gap-2 rounded-full border border-[color:rgba(29,27,23,0.12)] bg-[var(--sheeto-card)] px-4 py-1.5 shadow-[0_8px_20px_-16px_var(--sheeto-shadow)]">
                         <Sparkles className="size-4 text-[var(--sheeto-accent)]" />
                         <span className="text-xs font-semibold tracking-[0.2em] text-[var(--sheeto-accent)] uppercase">
@@ -286,7 +321,7 @@ export default function Welcome({
                 </section>
 
                 {/* Features */}
-                <section className="flex flex-col gap-10">
+                <section aria-label="Ferramentas" className="flex flex-col gap-10">
                     <div className="flex flex-col items-center gap-3 text-center">
                         <p className="text-xs font-semibold tracking-[0.3em] text-[var(--sheeto-accent)] uppercase">
                             Ferramentas
@@ -334,7 +369,7 @@ export default function Welcome({
                 </section>
 
                 {/* How it works */}
-                <section className="flex flex-col gap-10">
+                <section aria-label="Como funciona" className="flex flex-col gap-10">
                     <div className="flex flex-col items-center gap-3 text-center">
                         <p className="text-xs font-semibold tracking-[0.3em] text-[var(--sheeto-accent-2)] uppercase">
                             Como funciona
@@ -370,7 +405,7 @@ export default function Welcome({
                 </section>
 
                 {/* Benefits */}
-                <section className="flex flex-col items-center gap-8 text-center">
+                <section aria-label="Benefícios" className="flex flex-col items-center gap-8 text-center">
                     <div className="flex flex-col items-center gap-3">
                         <p className="text-xs font-semibold tracking-[0.3em] text-[var(--sheeto-accent-3)] uppercase">
                             Por que o Sheeto
@@ -402,7 +437,7 @@ export default function Welcome({
                 </section>
 
                 {/* CTA */}
-                <section className="flex flex-col items-center gap-8 rounded-[36px] border border-[color:rgba(29,27,23,0.14)] bg-[var(--sheeto-ink)] px-6 py-14 text-center text-[var(--sheeto-canvas)] shadow-[0_32px_60px_-30px_var(--sheeto-shadow)] md:px-12">
+                <section aria-label="Chamada para ação" className="flex flex-col items-center gap-8 rounded-[36px] border border-[color:rgba(29,27,23,0.14)] bg-[var(--sheeto-ink)] px-6 py-14 text-center text-[var(--sheeto-canvas)] shadow-[0_32px_60px_-30px_var(--sheeto-shadow)] md:px-12">
                     <div className="flex flex-col items-center gap-4">
                         <BookOpen className="size-10 text-[var(--sheeto-accent-3)]" />
                         <h2
@@ -459,7 +494,7 @@ export default function Welcome({
                         Plataforma de estudos com inteligência artificial.
                     </p>
                 </footer>
-            </div>
+            </main>
         </div>
     );
 }

@@ -4,6 +4,19 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
+        <meta name="description" content="Sheeto é a plataforma de estudos com IA que gera listas de exercícios, resumos e materiais personalizados para o seu nível. Estude de forma inteligente.">
+        <meta name="robots" content="index, follow">
+        <link rel="canonical" href="{{ url()->current() }}">
+
+        {{-- Open Graph --}}
+        <meta property="og:type" content="website">
+        <meta property="og:locale" content="pt_BR">
+        <meta property="og:site_name" content="{{ config('app.name', 'Sheeto') }}">
+        <meta property="og:url" content="{{ url()->current() }}">
+
+        {{-- Twitter Card --}}
+        <meta name="twitter:card" content="summary_large_image">
+
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>
             (function() {

@@ -7,7 +7,7 @@ import { createRoot } from 'react-dom/client';
 import { initializeTheme } from './hooks/use-appearance';
 
 createInertiaApp({
-    title: (title) => title,
+    title: (title) => (title ? `${title} - ${import.meta.env.VITE_APP_NAME || 'Sheeto'}` : import.meta.env.VITE_APP_NAME || 'Sheeto'),
     resolve: (name) =>
         resolvePageComponent(
             `./pages/${name}.tsx`,

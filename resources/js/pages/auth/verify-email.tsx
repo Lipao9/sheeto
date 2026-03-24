@@ -13,7 +13,9 @@ export default function VerifyEmail({ status }: { status?: string }) {
             title="Verifique seu e-mail"
             description="Confirme seu endereço de e-mail clicando no link que acabamos de enviar."
         >
-            <Head title="Verificação de e-mail" />
+            <Head title="Verificação de e-mail">
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
 
             {status === 'verification-link-sent' && (
                 <div className="mb-4 text-center text-sm font-medium text-green-600">
