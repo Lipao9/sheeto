@@ -29,20 +29,24 @@ class SummaryController extends Controller
 
     public function index(Request $request): Response
     {
-        $summaryId = $request->integer('summary');
-
-        $summary = $request->user()
+        $summaries = $request->user()
             ->summaries()
-            ->when($summaryId, fn ($query) => $query->whereKey($summaryId))
             ->latest()
-            ->first();
+            ->paginate(12, ['id', 'title', 'discipline', 'topic', 'source_file_name', 'created_at']);
 
-        if ($summaryId && ! $summary) {
+        return Inertia::render('summaries/index', [
+            'summaries' => $summaries,
+        ]);
+    }
+
+    public function show(Request $request, Summary $summary): Response
+    {
+        if ($summary->user_id !== $request->user()?->id) {
             abort(HttpResponse::HTTP_NOT_FOUND);
         }
 
-        return Inertia::render('summaries/index', [
-            'summary' => $summary ? $this->presentSummary($summary) : null,
+        return Inertia::render('summaries/show', [
+            'summary' => $this->presentSummary($summary),
         ]);
     }
 
@@ -106,7 +110,7 @@ class SummaryController extends Controller
             'content' => $content,
         ]);
 
-        return to_route('summaries.index', ['summary' => $summary->id]);
+        return to_route('summaries.show', ['summary' => $summary->id]);
     }
 
     public function detectPageCount(Request $request): JsonResponse
@@ -131,7 +135,7 @@ class SummaryController extends Controller
 
         $summary->increment('share_link_copies_count');
 
-        return to_route('summaries.index', ['summary' => $summary->id]);
+        return to_route('summaries.show', ['summary' => $summary->id]);
     }
 
     public function destroy(Request $request, Summary $summary): RedirectResponse

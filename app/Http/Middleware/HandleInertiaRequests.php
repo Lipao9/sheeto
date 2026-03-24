@@ -2,8 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\Summary;
-use App\Models\Worksheet;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
@@ -47,34 +45,6 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
-            'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-            'worksheetHistory' => $request->user()
-                ? Worksheet::query()
-                    ->whereBelongsTo($request->user())
-                    ->latest()
-                    ->limit(25)
-                    ->get(['id', 'discipline', 'topic', 'created_at'])
-                    ->map(fn (Worksheet $worksheet) => [
-                        'id' => $worksheet->id,
-                        'discipline' => $worksheet->discipline,
-                        'topic' => $worksheet->topic,
-                        'created_at' => $worksheet->created_at->toIso8601String(),
-                    ])
-                : [],
-            'summaryHistory' => $request->user()
-                ? Summary::query()
-                    ->whereBelongsTo($request->user())
-                    ->latest()
-                    ->limit(25)
-                    ->get(['id', 'title', 'discipline', 'topic', 'created_at'])
-                    ->map(fn (Summary $summary) => [
-                        'id' => $summary->id,
-                        'title' => $summary->title,
-                        'discipline' => $summary->discipline,
-                        'topic' => $summary->topic,
-                        'created_at' => $summary->created_at->toIso8601String(),
-                    ])
-                : [],
         ];
     }
 }
