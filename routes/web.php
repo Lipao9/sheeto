@@ -79,6 +79,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('fichas', [WorksheetController::class, 'store'])
         ->name('worksheets.store');
 
+    Route::get('fichas/{worksheet}', [WorksheetController::class, 'show'])
+        ->name('worksheets.show');
+
     Route::post('fichas/{worksheet}/compartilhar', [WorksheetController::class, 'trackShareClick'])
         ->name('worksheets.share.click');
 
@@ -96,6 +99,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('resumos/detectar-paginas', [SummaryController::class, 'detectPageCount'])
         ->name('summaries.detect-pages');
+
+    Route::get('resumos/{summary}', [SummaryController::class, 'show'])
+        ->name('summaries.show');
 
     Route::post('resumos/{summary}/compartilhar', [SummaryController::class, 'trackShareClick'])
         ->name('summaries.share.click');

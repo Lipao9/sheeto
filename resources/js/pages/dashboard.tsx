@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/app-layout';
-import { create as worksheetsCreate, index as worksheetsIndex } from '@/routes/worksheets';
-import { create as summariesCreate, index as summariesIndex } from '@/routes/summaries';
+import { create as worksheetsCreate, index as worksheetsIndex, show as worksheetsShow } from '@/routes/worksheets';
+import { create as summariesCreate, index as summariesIndex, show as summariesShow } from '@/routes/summaries';
 import { dashboard } from '@/routes';
 import { type BreadcrumbItem, type SharedData } from '@/types';
 import { Head, Link, usePage } from '@inertiajs/react';
@@ -20,21 +20,18 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+type RecentActivityItem = {
+    id: number;
+    type: 'worksheet' | 'summary';
+    title: string;
+    discipline: string;
+    created_at: string;
+};
+
 type DashboardProps = SharedData & {
     worksheetCount: number;
-    recentWorksheets: {
-        id: number;
-        topic: string;
-        discipline: string;
-        created_at: string;
-    }[];
     summaryCount: number;
-    recentSummaries: {
-        id: number;
-        title: string;
-        discipline: string;
-        created_at: string;
-    }[];
+    recentActivity: RecentActivityItem[];
 };
 
 const tools = [
@@ -72,12 +69,12 @@ const tools = [
 
 export default function Dashboard({
     worksheetCount,
-    recentWorksheets,
     summaryCount,
-    recentSummaries,
+    recentActivity,
 }: DashboardProps) {
     const { auth } = usePage<SharedData>().props;
     const firstName = auth.user.name.split(' ')[0];
+    const totalCount = worksheetCount + summaryCount;
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -142,142 +139,104 @@ export default function Dashboard({
                     ))}
                 </div>
 
-                {/* Stats + recent worksheets */}
+                {/* Recent activity */}
                 <div className="flex flex-col gap-6">
                     <div className="flex items-center justify-between">
                         <h2 className="text-lg font-semibold">
-                            Suas listas
+                            Atividade recente
                         </h2>
-                        <Button asChild variant="outline" size="sm">
-                            <Link href={worksheetsIndex()} prefetch>
-                                Ver todas
-                            </Link>
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button asChild variant="outline" size="sm">
+                                <Link href={worksheetsIndex()} prefetch>
+                                    Listas
+                                </Link>
+                            </Button>
+                            <Button asChild variant="outline" size="sm">
+                                <Link href={summariesIndex()} prefetch>
+                                    Resumos
+                                </Link>
+                            </Button>
+                        </div>
                     </div>
 
-                    {worksheetCount === 0 ? (
+                    {totalCount === 0 ? (
                         <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed bg-card p-10 text-center">
                             <div className="flex size-14 items-center justify-center rounded-2xl bg-muted">
                                 <ClipboardList className="size-7 text-muted-foreground" />
                             </div>
                             <div className="flex flex-col gap-1">
                                 <p className="text-sm font-semibold">
-                                    Nenhuma lista ainda
+                                    Nenhuma atividade ainda
                                 </p>
                                 <p className="text-xs text-muted-foreground">
-                                    Crie sua primeira lista de exercícios com IA.
+                                    Crie sua primeira lista ou resumo com IA.
                                 </p>
                             </div>
-                            <Button asChild size="sm">
-                                <Link href={worksheetsCreate()} prefetch>
-                                    <Plus className="mr-1 size-4" />
-                                    Criar primeira lista
-                                </Link>
-                            </Button>
+                            <div className="flex gap-2">
+                                <Button asChild size="sm">
+                                    <Link href={worksheetsCreate()} prefetch>
+                                        <Plus className="mr-1 size-4" />
+                                        Nova lista
+                                    </Link>
+                                </Button>
+                                <Button asChild size="sm" variant="outline">
+                                    <Link href={summariesCreate()} prefetch>
+                                        <Plus className="mr-1 size-4" />
+                                        Novo resumo
+                                    </Link>
+                                </Button>
+                            </div>
                         </div>
                     ) : (
                         <div className="grid gap-3">
-                            {recentWorksheets.map((ws) => (
-                                <Link
-                                    key={ws.id}
-                                    href={worksheetsIndex({
-                                        query: { worksheet: ws.id },
-                                    })}
-                                    className="flex items-center gap-4 rounded-xl border bg-card p-4 transition hover:bg-accent/50"
-                                    prefetch
-                                >
-                                    <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent/80">
-                                        <ClipboardList className="size-4 text-accent-foreground" />
-                                    </div>
-                                    <div className="flex min-w-0 flex-col gap-0.5">
-                                        <span className="truncate text-sm font-medium">
-                                            {ws.topic}
-                                        </span>
-                                        <span className="truncate text-xs text-muted-foreground">
-                                            {ws.discipline}
-                                        </span>
-                                    </div>
-                                    <span className="ml-auto shrink-0 text-xs text-muted-foreground">
-                                        {new Date(ws.created_at).toLocaleDateString('pt-BR')}
-                                    </span>
-                                </Link>
-                            ))}
-                            <Button asChild variant="ghost" size="sm" className="mt-1 self-start">
-                                <Link href={worksheetsCreate()} prefetch>
-                                    <Plus className="mr-1 size-4" />
-                                    Nova lista
-                                </Link>
-                            </Button>
-                        </div>
-                    )}
-                </div>
+                            {recentActivity.map((item) => {
+                                const Icon = item.type === 'worksheet' ? ClipboardList : Brain;
+                                const href = item.type === 'worksheet'
+                                    ? worksheetsShow(item.id)
+                                    : summariesShow(item.id);
+                                const typeLabel = item.type === 'worksheet' ? 'Lista' : 'Resumo';
 
-                {/* Recent summaries */}
-                <div className="flex flex-col gap-6">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-lg font-semibold">
-                            Seus resumos
-                        </h2>
-                        <Button asChild variant="outline" size="sm">
-                            <Link href={summariesIndex()} prefetch>
-                                Ver todos
-                            </Link>
-                        </Button>
-                    </div>
-
-                    {summaryCount === 0 ? (
-                        <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed bg-card p-10 text-center">
-                            <div className="flex size-14 items-center justify-center rounded-2xl bg-muted">
-                                <Brain className="size-7 text-muted-foreground" />
-                            </div>
-                            <div className="flex flex-col gap-1">
-                                <p className="text-sm font-semibold">
-                                    Nenhum resumo ainda
-                                </p>
-                                <p className="text-xs text-muted-foreground">
-                                    Crie seu primeiro resumo de estudo com IA.
-                                </p>
-                            </div>
-                            <Button asChild size="sm">
-                                <Link href={summariesCreate()} prefetch>
-                                    <Plus className="mr-1 size-4" />
-                                    Criar primeiro resumo
-                                </Link>
-                            </Button>
-                        </div>
-                    ) : (
-                        <div className="grid gap-3">
-                            {recentSummaries.map((s) => (
-                                <Link
-                                    key={s.id}
-                                    href={summariesIndex({
-                                        query: { summary: s.id },
-                                    })}
-                                    className="flex items-center gap-4 rounded-xl border bg-card p-4 transition hover:bg-accent/50"
-                                    prefetch
-                                >
-                                    <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent/80">
-                                        <Brain className="size-4 text-accent-foreground" />
-                                    </div>
-                                    <div className="flex min-w-0 flex-col gap-0.5">
-                                        <span className="truncate text-sm font-medium">
-                                            {s.title}
+                                return (
+                                    <Link
+                                        key={`${item.type}-${item.id}`}
+                                        href={href}
+                                        className="flex items-center gap-4 rounded-xl border bg-card p-4 transition hover:bg-accent/50"
+                                        prefetch
+                                    >
+                                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-accent/80">
+                                            <Icon className="size-4 text-accent-foreground" />
+                                        </div>
+                                        <div className="flex min-w-0 flex-col gap-0.5">
+                                            <span className="truncate text-sm font-medium">
+                                                {item.title}
+                                            </span>
+                                            <span className="truncate text-xs text-muted-foreground">
+                                                {item.discipline}
+                                            </span>
+                                        </div>
+                                        <span className="ml-auto shrink-0 rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                                            {typeLabel}
                                         </span>
-                                        <span className="truncate text-xs text-muted-foreground">
-                                            {s.discipline}
+                                        <span className="shrink-0 text-xs text-muted-foreground">
+                                            {new Date(item.created_at).toLocaleDateString('pt-BR')}
                                         </span>
-                                    </div>
-                                    <span className="ml-auto shrink-0 text-xs text-muted-foreground">
-                                        {new Date(s.created_at).toLocaleDateString('pt-BR')}
-                                    </span>
-                                </Link>
-                            ))}
-                            <Button asChild variant="ghost" size="sm" className="mt-1 self-start">
-                                <Link href={summariesCreate()} prefetch>
-                                    <Plus className="mr-1 size-4" />
-                                    Novo resumo
-                                </Link>
-                            </Button>
+                                    </Link>
+                                );
+                            })}
+                            <div className="flex gap-2 mt-1">
+                                <Button asChild variant="ghost" size="sm">
+                                    <Link href={worksheetsCreate()} prefetch>
+                                        <Plus className="mr-1 size-4" />
+                                        Nova lista
+                                    </Link>
+                                </Button>
+                                <Button asChild variant="ghost" size="sm">
+                                    <Link href={summariesCreate()} prefetch>
+                                        <Plus className="mr-1 size-4" />
+                                        Novo resumo
+                                    </Link>
+                                </Button>
+                            </div>
                         </div>
                     )}
                 </div>

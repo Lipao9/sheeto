@@ -28,7 +28,7 @@ test('user can create a worksheet and see generated content', function () {
     $worksheet = Worksheet::query()->where('user_id', $user->id)->first();
 
     $response->assertRedirect(
-        route('worksheets.index', ['worksheet' => $worksheet?->id])
+        route('worksheets.show', ['worksheet' => $worksheet?->id])
     );
 
     expect($worksheet)->not()->toBeNull()
@@ -97,7 +97,7 @@ test('exercise types accept practical problems', function () {
     $worksheet = Worksheet::query()->where('user_id', $user->id)->first();
 
     $response->assertRedirect(
-        route('worksheets.index', ['worksheet' => $worksheet?->id])
+        route('worksheets.show', ['worksheet' => $worksheet?->id])
     );
 
     expect($worksheet?->exercise_types)->toBe(['problemas_praticos']);
@@ -122,7 +122,7 @@ test('answer style can be explanation', function () {
     $worksheet = Worksheet::query()->where('user_id', $user->id)->first();
 
     $response->assertRedirect(
-        route('worksheets.index', ['worksheet' => $worksheet?->id])
+        route('worksheets.show', ['worksheet' => $worksheet?->id])
     );
 
     expect($worksheet?->answer_style)->toBe('explicacao');
@@ -172,7 +172,7 @@ test('semester period is required for college and postgraduate levels', function
     'pos-graduacao' => ['pos-graduacao'],
 ]);
 
-test('history only shows worksheets from the authenticated user', function () {
+test('index only shows worksheets from the authenticated user', function () {
     $user = User::factory()->create();
     $worksheet = Worksheet::factory()->for($user)->create([
         'exercise_types' => ['multipla_escolha', 'discursivo'],
@@ -183,14 +183,12 @@ test('history only shows worksheets from the authenticated user', function () {
 
     $response->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('worksheets/index')
-        ->where('worksheet.id', $worksheet->id)
-        ->where('worksheet.exercise_types', ['multipla_escolha', 'discursivo'])
-        ->has('worksheetHistory', 1)
-        ->where('worksheetHistory.0.id', $worksheet->id)
+        ->has('worksheets.data', 1)
+        ->where('worksheets.data.0.id', $worksheet->id)
     );
 });
 
-test('user can view the worksheets index without a selected worksheet', function () {
+test('user can view the worksheets index with empty list', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
@@ -198,9 +196,33 @@ test('user can view the worksheets index without a selected worksheet', function
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('worksheets/index')
-            ->where('worksheet', null)
-            ->has('worksheetHistory', 0)
+            ->has('worksheets.data', 0)
         );
+});
+
+test('user can view a specific worksheet', function () {
+    $this->withoutVite();
+
+    $user = User::factory()->create();
+    $worksheet = Worksheet::factory()->for($user)->create();
+
+    $this->actingAs($user)
+        ->get(route('worksheets.show', $worksheet))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('worksheets/show')
+            ->where('worksheet.id', $worksheet->id)
+            ->where('worksheet.topic', $worksheet->topic)
+        );
+});
+
+test('user cannot view worksheets from other users', function () {
+    $user = User::factory()->create();
+    $worksheet = Worksheet::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('worksheets.show', $worksheet))
+        ->assertNotFound();
 });
 
 test('user can view the create worksheet page', function () {
@@ -213,7 +235,7 @@ test('user can view the create worksheet page', function () {
         'created_at' => now()->subDay(),
         'updated_at' => now()->subDay(),
     ]);
-    $worksheet = Worksheet::factory()->for($user)->create([
+    Worksheet::factory()->for($user)->create([
         'education_level' => 'faculdade',
         'grade_year' => null,
         'semester_period' => '2o semestre',
@@ -228,10 +250,6 @@ test('user can view the create worksheet page', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('worksheets/create')
-            ->has('worksheetHistory', 2)
-            ->where('worksheetHistory.0.id', $worksheet->id)
-            ->where('worksheetHistory.0.discipline', 'Biologia')
-            ->where('worksheetHistory.0.topic', 'Genetica')
             ->where('lastWorksheet.education_level', 'faculdade')
             ->where('lastWorksheet.grade_year', null)
             ->where('lastWorksheet.semester_period', '2o semestre')
@@ -248,7 +266,6 @@ test('create worksheet page has no last worksheet when history is empty', functi
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('worksheets/create')
-            ->has('worksheetHistory', 0)
             ->where('lastWorksheet', null)
         );
 });

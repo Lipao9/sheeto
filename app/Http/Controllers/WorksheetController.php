@@ -28,20 +28,24 @@ class WorksheetController extends Controller
 
     public function index(Request $request): Response
     {
-        $worksheetId = $request->integer('worksheet');
-
-        $worksheet = $request->user()
+        $worksheets = $request->user()
             ->worksheets()
-            ->when($worksheetId, fn ($query) => $query->whereKey($worksheetId))
             ->latest()
-            ->first();
+            ->paginate(12, ['id', 'discipline', 'topic', 'difficulty', 'education_level', 'question_count', 'created_at']);
 
-        if ($worksheetId && ! $worksheet) {
+        return Inertia::render('worksheets/index', [
+            'worksheets' => $worksheets,
+        ]);
+    }
+
+    public function show(Request $request, Worksheet $worksheet): Response
+    {
+        if ($worksheet->user_id !== $request->user()?->id) {
             abort(HttpResponse::HTTP_NOT_FOUND);
         }
 
-        return Inertia::render('worksheets/index', [
-            'worksheet' => $worksheet ? $this->presentWorksheet($worksheet) : null,
+        return Inertia::render('worksheets/show', [
+            'worksheet' => $this->presentWorksheet($worksheet),
         ]);
     }
 
@@ -122,7 +126,7 @@ class WorksheetController extends Controller
             'content' => $content,
         ]);
 
-        return to_route('worksheets.index', ['worksheet' => $worksheet->id]);
+        return to_route('worksheets.show', ['worksheet' => $worksheet->id]);
     }
 
     public function trackShareClick(Request $request, Worksheet $worksheet): RedirectResponse
@@ -133,7 +137,7 @@ class WorksheetController extends Controller
 
         $worksheet->increment('share_link_copies_count');
 
-        return to_route('worksheets.index', ['worksheet' => $worksheet->id]);
+        return to_route('worksheets.show', ['worksheet' => $worksheet->id]);
     }
 
     public function destroy(Request $request, Worksheet $worksheet): RedirectResponse

@@ -14,7 +14,7 @@ test('guests cannot access summary creation page', function () {
     $this->get(route('summaries.create'))->assertRedirect(route('login'));
 });
 
-test('user can view the summaries index without a selected summary', function () {
+test('user can view the summaries index with empty list', function () {
     $user = User::factory()->create();
 
     $this->actingAs($user)
@@ -22,22 +22,48 @@ test('user can view the summaries index without a selected summary', function ()
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('summaries/index')
-            ->where('summary', null)
+            ->has('summaries.data', 0)
         );
 });
 
-test('user can view the summaries index with a selected summary', function () {
+test('user can view the summaries index with paginated list', function () {
     $user = User::factory()->create();
     $summary = Summary::factory()->for($user)->create();
 
     $this->actingAs($user)
-        ->get(route('summaries.index', ['summary' => $summary->id]))
+        ->get(route('summaries.index'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->component('summaries/index')
+            ->has('summaries.data', 1)
+            ->where('summaries.data.0.id', $summary->id)
+            ->where('summaries.data.0.title', $summary->title)
+        );
+});
+
+test('user can view a specific summary', function () {
+    $this->withoutVite();
+
+    $user = User::factory()->create();
+    $summary = Summary::factory()->for($user)->create();
+
+    $this->actingAs($user)
+        ->get(route('summaries.show', $summary))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->component('summaries/show')
             ->where('summary.id', $summary->id)
             ->where('summary.title', $summary->title)
         );
+});
+
+test('user cannot view summaries from other users', function () {
+    $user = User::factory()->create();
+    $summary = Summary::factory()->create();
+
+    $this->actingAs($user)
+        ->get(route('summaries.show', $summary))
+        ->assertNotFound();
 });
 
 test('user can view the create summary page', function () {
@@ -78,7 +104,7 @@ test('user can create a summary with a text file', function () {
     $summary = Summary::query()->where('user_id', $user->id)->first();
 
     $response->assertRedirect(
-        route('summaries.index', ['summary' => $summary?->id])
+        route('summaries.show', ['summary' => $summary?->id])
     );
 
     expect($summary)->not()->toBeNull()
@@ -114,7 +140,7 @@ test('user cannot delete summaries from other users', function () {
     $response->assertNotFound();
 });
 
-test('history only shows summaries from the authenticated user', function () {
+test('index only shows summaries from the authenticated user', function () {
     $user = User::factory()->create();
     $summary = Summary::factory()->for($user)->create();
     Summary::factory()->create(); // Belongs to another user
@@ -123,20 +149,7 @@ test('history only shows summaries from the authenticated user', function () {
 
     $response->assertOk()->assertInertia(fn (Assert $page) => $page
         ->component('summaries/index')
-        ->where('summary.id', $summary->id)
-        ->has('summaryHistory', 1)
-        ->where('summaryHistory.0.id', $summary->id)
+        ->has('summaries.data', 1)
+        ->where('summaries.data.0.id', $summary->id)
     );
-});
-
-test('summary history is shared via inertia', function () {
-    $user = User::factory()->create();
-    Summary::factory()->for($user)->count(3)->create();
-
-    $this->actingAs($user)
-        ->get(route('summaries.index'))
-        ->assertOk()
-        ->assertInertia(fn (Assert $page) => $page
-            ->has('summaryHistory', 3)
-        );
 });
