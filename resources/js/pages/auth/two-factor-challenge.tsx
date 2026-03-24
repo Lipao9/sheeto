@@ -50,7 +50,9 @@ export default function TwoFactorChallenge() {
             title={authConfigContent.title}
             description={authConfigContent.description}
         >
-            <Head title="Two-Factor Authentication" />
+            <Head title="Autenticação de dois fatores">
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
 
             <div className="space-y-6">
                 <Form

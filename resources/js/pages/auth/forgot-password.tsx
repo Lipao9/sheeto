@@ -17,7 +17,9 @@ export default function ForgotPassword({ status }: { status?: string }) {
             title="Esqueceu a senha"
             description="Informe seu e-mail para receber o link de redefinição de senha"
         >
-            <Head title="Esqueceu a senha" />
+            <Head title="Esqueceu a senha">
+                <meta name="robots" content="noindex, nofollow" />
+            </Head>
 
             {status && (
                 <div className="mb-4 text-center text-sm font-medium text-green-600">

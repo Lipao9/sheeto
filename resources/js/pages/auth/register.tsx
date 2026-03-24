@@ -18,7 +18,9 @@ export default function Register() {
         <AuthLayout
             title="Criar conta"
         >
-            <Head title="Criar conta" />
+            <Head title="Criar conta">
+                <meta name="description" content="Crie sua conta gratuita no Sheeto e comece a gerar listas de exercícios, resumos e materiais de estudo com IA." />
+            </Head>
             <Form
                 {...store.form()}
                 resetOnSuccess={['password', 'password_confirmation']}

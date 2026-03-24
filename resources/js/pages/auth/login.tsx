@@ -60,7 +60,9 @@ export default function Login({
         <AuthLayout
             title="Entrar"
         >
-            <Head title="Entrar" />
+            <Head title="Entrar">
+                <meta name="description" content="Acesse sua conta no Sheeto e continue seus estudos com materiais personalizados por IA." />
+            </Head>
 
             {oauthError && (
                 <div className="rounded-md border border-red-300 bg-red-50 px-3 py-2 text-center text-sm font-medium text-red-700">
