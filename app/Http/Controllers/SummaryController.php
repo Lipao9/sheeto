@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\Summaries\GenerateSummary;
-use App\Actions\Summaries\PrepareDocumentForSummary;
 use App\Http\Requests\Summaries\StoreSummaryRequest;
+use App\Jobs\ProcessSummary;
 use App\Models\Summary;
 use App\Support\PdfPageCounter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -32,7 +33,7 @@ class SummaryController extends Controller
         $summaries = $request->user()
             ->summaries()
             ->latest()
-            ->paginate(12, ['id', 'title', 'discipline', 'topic', 'source_file_name', 'created_at']);
+            ->paginate(12, ['id', 'title', 'discipline', 'topic', 'source_file_name', 'status', 'created_at']);
 
         return Inertia::render('summaries/index', [
             'summaries' => $summaries,
@@ -55,11 +56,8 @@ class SummaryController extends Controller
         return Inertia::render('summaries/create');
     }
 
-    public function store(
-        StoreSummaryRequest $request,
-        PrepareDocumentForSummary $prepareDocument,
-        GenerateSummary $generateSummary
-    ): RedirectResponse {
+    public function store(StoreSummaryRequest $request): RedirectResponse
+    {
         $validated = $request->validated();
         $sourceDocument = $request->file('source_document');
 
@@ -72,43 +70,36 @@ class SummaryController extends Controller
         $pageRangeStart = isset($validated['page_range_start']) ? (int) $validated['page_range_start'] : null;
         $pageRangeEnd = isset($validated['page_range_end']) ? (int) $validated['page_range_end'] : null;
 
-        $documentContext = $prepareDocument->handle($sourceDocument, $pageRangeStart, $pageRangeEnd);
-
-        $discipline = trim((string) ($validated['discipline'] ?? ''));
-
-        if ($discipline === '') {
-            $discipline = $documentContext['discipline'] ?? 'Interdisciplinar';
-        }
-
-        $topic = trim((string) ($validated['topic'] ?? ''));
-
-        if ($topic === '') {
-            $topic = $documentContext['topic'] ?? 'Estudo guiado pelo documento';
-        }
-
-        $content = $generateSummary->handle([
-            'discipline' => $discipline,
-            'topic' => $topic,
-            'reference_material' => $documentContext['reference_material'] ?? '',
-            'notes' => $validated['notes'] ?? null,
-        ]);
+        $storedPath = 'summary-uploads/'.Str::uuid().'.'.$sourceDocument->getClientOriginalExtension();
+        Storage::disk('local')->put($storedPath, file_get_contents($sourceDocument->getRealPath()));
 
         $title = trim((string) ($validated['title'] ?? ''));
-
-        if ($title === '') {
-            $title = $this->extractTitleFromContent($content, $topic);
-        }
+        $discipline = trim((string) ($validated['discipline'] ?? ''));
+        $topic = trim((string) ($validated['topic'] ?? ''));
 
         $summary = $request->user()->summaries()->create([
-            'title' => $title,
-            'discipline' => $discipline,
-            'topic' => $topic,
+            'title' => $title !== '' ? $title : 'Gerando resumo...',
+            'discipline' => $discipline !== '' ? $discipline : 'Processando...',
+            'topic' => $topic !== '' ? $topic : 'Processando...',
             'source_file_name' => $sourceDocument->getClientOriginalName(),
             'page_range_start' => $pageRangeStart,
             'page_range_end' => $pageRangeEnd,
-            'total_pages' => $documentContext['total_pages'] ?? null,
-            'content' => $content,
+            'status' => Summary::STATUS_PROCESSING,
         ]);
+
+        ProcessSummary::dispatch(
+            $summary->id,
+            $storedPath,
+            $sourceDocument->getClientOriginalName(),
+            [
+                'title' => $validated['title'] ?? null,
+                'discipline' => $validated['discipline'] ?? null,
+                'topic' => $validated['topic'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+                'page_range_start' => $pageRangeStart,
+                'page_range_end' => $pageRangeEnd,
+            ]
+        );
 
         return to_route('summaries.show', ['summary' => $summary->id]);
     }
@@ -164,6 +155,8 @@ class SummaryController extends Controller
             'page_range_end' => $summary->page_range_end,
             'total_pages' => $summary->total_pages,
             'content' => $summary->content,
+            'status' => $summary->status,
+            'error_message' => $summary->error_message,
             'share_url' => URL::signedRoute('summaries.shared.show', [
                 'summary' => $summary,
             ]),
@@ -186,18 +179,5 @@ class SummaryController extends Controller
             'content' => $summary->content,
             'created_at' => $summary->created_at->toIso8601String(),
         ];
-    }
-
-    private function extractTitleFromContent(string $content, string $fallbackTopic): string
-    {
-        if (preg_match('/^Titulo\s+do\s+Resumo\s*:\s*(.+)$/mi', $content, $matches) === 1) {
-            $extracted = trim((string) ($matches[1] ?? ''));
-
-            if ($extracted !== '') {
-                return $extracted;
-            }
-        }
-
-        return 'Resumo: '.$fallbackTopic;
     }
 }

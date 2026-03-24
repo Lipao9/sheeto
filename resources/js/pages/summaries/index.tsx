@@ -10,6 +10,7 @@ type SummaryItem = {
     discipline: string;
     topic: string;
     source_file_name?: string | null;
+    status?: string;
     created_at: string;
 };
 
@@ -85,9 +86,21 @@ export default function SummariesIndexPage({ summaries }: SummariesIndexProps) {
                                             {s.source_file_name}
                                         </span>
                                     )}
-                                    <span className="mt-auto text-xs text-muted-foreground">
-                                        {formatDate(s.created_at)}
-                                    </span>
+                                    <div className="mt-auto flex items-center justify-between">
+                                        <span className="text-xs text-muted-foreground">
+                                            {formatDate(s.created_at)}
+                                        </span>
+                                        {s.status === 'processing' && (
+                                            <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                                                Gerando...
+                                            </span>
+                                        )}
+                                        {s.status === 'failed' && (
+                                            <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                                                Erro
+                                            </span>
+                                        )}
+                                    </div>
                                 </Link>
                             ))}
                         </div>

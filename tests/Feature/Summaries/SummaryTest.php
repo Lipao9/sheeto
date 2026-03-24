@@ -1,9 +1,10 @@
 <?php
 
+use App\Jobs\ProcessSummary;
 use App\Models\Summary;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Bus;
 use Inertia\Testing\AssertableInertia as Assert;
 
 test('guests cannot access summaries', function () {
@@ -78,24 +79,9 @@ test('user can view the create summary page', function () {
 });
 
 test('user can create a summary with a text file', function () {
-    config()->set('services.openai.api_key', 'fake-key');
+    Bus::fake();
 
     $user = User::factory()->create();
-
-    Http::fake([
-        '*/chat/completions' => Http::sequence([
-            Http::response([
-                'choices' => [
-                    ['message' => ['content' => "STATUS: ok\nDISCIPLINE: Matematica\nTOPIC: Algebra"]],
-                ],
-            ]),
-            Http::response([
-                'choices' => [
-                    ['message' => ['content' => "Titulo do Resumo: Resumo de Algebra\n\nVisao Geral:\nConteudo do resumo gerado."]],
-                ],
-            ]),
-        ]),
-    ]);
 
     $file = UploadedFile::fake()->createWithContent('estudo.txt', str_repeat('Conteudo de estudo sobre algebra linear. ', 20));
 
@@ -106,14 +92,14 @@ test('user can create a summary with a text file', function () {
     $summary = Summary::query()->where('user_id', $user->id)->first();
 
     expect($summary)->not()->toBeNull()
-        ->and($summary->content)->not->toBeEmpty()
-        ->and($summary->discipline)->toBe('Matematica')
-        ->and($summary->topic)->toBe('Algebra')
+        ->and($summary->status)->toBe(Summary::STATUS_PROCESSING)
         ->and($summary->source_file_name)->toBe('estudo.txt');
 
     $response->assertRedirect(
         route('summaries.show', ['summary' => $summary->id])
     );
+
+    Bus::assertDispatched(ProcessSummary::class);
 });
 
 test('user can delete a summary', function () {
