@@ -15,7 +15,7 @@ test('worksheet owner can register a share click', function () {
         route('worksheets.share.click', $worksheet)
     );
 
-    $response->assertRedirect(route('worksheets.index', [
+    $response->assertRedirect(route('worksheets.show', [
         'worksheet' => $worksheet->id,
     ]));
 

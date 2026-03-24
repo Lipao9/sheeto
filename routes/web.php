@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Auth\GoogleAuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\SummaryController;
 use App\Http\Controllers\WorksheetController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -61,6 +62,10 @@ Route::get('fichas/compartilhada/{worksheet}', [WorksheetController::class, 'sha
     ->middleware('signed')
     ->name('worksheets.shared.show');
 
+Route::get('resumos/compartilhado/{summary}', [SummaryController::class, 'shared'])
+    ->middleware('signed')
+    ->name('summaries.shared.show');
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', DashboardController::class)
         ->name('dashboard');
@@ -74,11 +79,35 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('fichas', [WorksheetController::class, 'store'])
         ->name('worksheets.store');
 
+    Route::get('fichas/{worksheet}', [WorksheetController::class, 'show'])
+        ->name('worksheets.show');
+
     Route::post('fichas/{worksheet}/compartilhar', [WorksheetController::class, 'trackShareClick'])
         ->name('worksheets.share.click');
 
     Route::delete('fichas/{worksheet}', [WorksheetController::class, 'destroy'])
         ->name('worksheets.destroy');
+
+    Route::get('resumos', [SummaryController::class, 'index'])
+        ->name('summaries.index');
+
+    Route::get('resumos/criar', [SummaryController::class, 'create'])
+        ->name('summaries.create');
+
+    Route::post('resumos', [SummaryController::class, 'store'])
+        ->name('summaries.store');
+
+    Route::post('resumos/detectar-paginas', [SummaryController::class, 'detectPageCount'])
+        ->name('summaries.detect-pages');
+
+    Route::get('resumos/{summary}', [SummaryController::class, 'show'])
+        ->name('summaries.show');
+
+    Route::post('resumos/{summary}/compartilhar', [SummaryController::class, 'trackShareClick'])
+        ->name('summaries.share.click');
+
+    Route::delete('resumos/{summary}', [SummaryController::class, 'destroy'])
+        ->name('summaries.destroy');
 });
 
 Route::middleware(['auth', 'verified', 'can:isAdmin'])

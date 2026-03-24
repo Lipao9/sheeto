@@ -43,7 +43,7 @@ test('user can create a worksheet from a txt document with inferred metadata', f
 
     $worksheet = Worksheet::query()->where('user_id', $user->id)->first();
 
-    $response->assertRedirect(route('worksheets.index', ['worksheet' => $worksheet?->id]));
+    $response->assertRedirect(route('worksheets.show', ['worksheet' => $worksheet?->id]));
 
     expect($worksheet)->not()->toBeNull()
         ->and($worksheet?->discipline)->toBe('Historia')
@@ -146,7 +146,7 @@ test('form mode still works when creation mode is omitted', function () {
 
     $worksheet = Worksheet::query()->where('user_id', $user->id)->first();
 
-    $response->assertRedirect(route('worksheets.index', ['worksheet' => $worksheet?->id]));
+    $response->assertRedirect(route('worksheets.show', ['worksheet' => $worksheet?->id]));
 
     expect($worksheet)->not->toBeNull()
         ->and($worksheet?->discipline)->toBe('Matematica')
