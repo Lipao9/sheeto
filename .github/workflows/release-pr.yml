@@ -1,0 +1,100 @@
+name: release-pr
+
+on:
+  push:
+    branches:
+      - develop
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: release-pr
+  cancel-in-progress: true
+
+jobs:
+  sync-release-pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Sync develop -> main release PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const base = 'main';
+            const head = 'develop';
+            const title = 'Release: develop -> main';
+
+            const comparison = await github.rest.repos.compareCommitsWithBasehead({
+              owner,
+              repo,
+              basehead: `${base}...${head}`,
+            });
+
+            const body = [
+              'PR de release gerado automaticamente.',
+              '',
+              `- Base: \`${base}\``,
+              `- Head: \`${head}\``,
+              `- Compare: ${comparison.data.html_url}`,
+              '',
+              'Ao fazer merge deste PR, o deploy automatico de `main` sera acionado.',
+            ].join('\n');
+
+            const { data: openPullRequests } = await github.rest.pulls.list({
+              owner,
+              repo,
+              state: 'open',
+              base,
+              head: `${owner}:${head}`,
+              per_page: 100,
+            });
+
+            const releasePullRequest = openPullRequests[0];
+
+            if (comparison.data.ahead_by === 0) {
+              if (releasePullRequest) {
+                await github.rest.pulls.update({
+                  owner,
+                  repo,
+                  pull_number: releasePullRequest.number,
+                  state: 'closed',
+                });
+
+                core.notice(`Closed stale release PR #${releasePullRequest.number}.`);
+              } else {
+                core.notice('No release PR needed.');
+              }
+
+              return;
+            }
+
+            if (releasePullRequest) {
+              await github.rest.pulls.update({
+                owner,
+                repo,
+                pull_number: releasePullRequest.number,
+                title,
+                body,
+                state: 'open',
+              });
+
+              core.notice(`Updated release PR #${releasePullRequest.number}.`);
+              return;
+            }
+
+            const { data: createdPullRequest } = await github.rest.pulls.create({
+              owner,
+              repo,
+              title,
+              head,
+              base,
+              body,
+              draft: false,
+            });
+
+            core.notice(`Created release PR #${createdPullRequest.number}.`);
