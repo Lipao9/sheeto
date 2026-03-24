@@ -17,9 +17,16 @@ class DashboardController extends Controller
             ->limit(5)
             ->get(['id', 'topic', 'discipline', 'created_at']);
 
+        $recentSummaries = $user->summaries()
+            ->latest()
+            ->limit(5)
+            ->get(['id', 'title', 'discipline', 'created_at']);
+
         return Inertia::render('dashboard', [
             'worksheetCount' => $user->worksheets()->count(),
             'recentWorksheets' => $recentWorksheets,
+            'summaryCount' => $user->summaries()->count(),
+            'recentSummaries' => $recentSummaries,
         ]);
     }
 }

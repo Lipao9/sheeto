@@ -26,6 +26,11 @@ import {
     destroy as worksheetsDestroy,
     index as worksheetsIndex,
 } from '@/routes/worksheets';
+import {
+    create as summariesCreate,
+    destroy as summariesDestroy,
+    index as summariesIndex,
+} from '@/routes/summaries';
 import { dashboard as adminDashboard } from '@/routes/admin';
 import { type SharedData } from '@/types';
 import { Link, router, usePage } from '@inertiajs/react';
@@ -46,10 +51,6 @@ import AppLogo from './app-logo';
 
 const comingSoonItems = [
     {
-        title: 'Resumos',
-        icon: Brain,
-    },
-    {
         title: 'Simulados',
         icon: Target,
     },
@@ -61,35 +62,64 @@ const comingSoonItems = [
 
 export function AppSidebar() {
     const { props, url } = usePage<SharedData>();
-    const history = useMemo(
+    const worksheetHistory = useMemo(
         () => props.worksheetHistory ?? [],
         [props.worksheetHistory],
     );
+    const summaryHistory = useMemo(
+        () => props.summaryHistory ?? [],
+        [props.summaryHistory],
+    );
     const isAdmin = Boolean(props.auth?.user?.is_admin);
-    const [search, setSearch] = useState('');
+    const [worksheetSearch, setWorksheetSearch] = useState('');
+    const [summarySearch, setSummarySearch] = useState('');
 
     const handleRemoveWorksheet = (worksheetId: number) => {
-                        if (!window.confirm('Deseja remover esta ficha?')) {
-                            return;
-                        }
+        if (!window.confirm('Deseja remover esta ficha?')) {
+            return;
+        }
 
         router.delete(worksheetsDestroy(worksheetId).url, {
             preserveScroll: true,
         });
     };
 
-    const filteredHistory = useMemo(() => {
-        const term = search.trim().toLowerCase();
-        if (!term) {
-            return history;
+    const handleRemoveSummary = (summaryId: number) => {
+        if (!window.confirm('Deseja remover este resumo?')) {
+            return;
         }
 
-        return history.filter(
+        router.delete(summariesDestroy(summaryId).url, {
+            preserveScroll: true,
+        });
+    };
+
+    const filteredWorksheetHistory = useMemo(() => {
+        const term = worksheetSearch.trim().toLowerCase();
+        if (!term) {
+            return worksheetHistory;
+        }
+
+        return worksheetHistory.filter(
             (item) =>
                 item.topic.toLowerCase().includes(term) ||
                 item.discipline.toLowerCase().includes(term),
         );
-    }, [history, search]);
+    }, [worksheetHistory, worksheetSearch]);
+
+    const filteredSummaryHistory = useMemo(() => {
+        const term = summarySearch.trim().toLowerCase();
+        if (!term) {
+            return summaryHistory;
+        }
+
+        return summaryHistory.filter(
+            (item) =>
+                item.title.toLowerCase().includes(term) ||
+                item.topic.toLowerCase().includes(term) ||
+                item.discipline.toLowerCase().includes(term),
+        );
+    }, [summaryHistory, summarySearch]);
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -144,6 +174,30 @@ export function AppSidebar() {
                                 </Link>
                             </Button>
                         </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                asChild
+                                isActive={resolveUrl(url).includes('resumos')}
+                            >
+                                <Link href={summariesIndex()} prefetch>
+                                    <Brain className="size-4" />
+                                    <span>Resumos</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+                        <SidebarMenuItem>
+                            <Button
+                                asChild
+                                size="sm"
+                                variant="outline"
+                                className="my-1 w-full justify-start gap-2"
+                            >
+                                <Link href={summariesCreate()} prefetch>
+                                    <Plus className="size-4" />
+                                    Novo resumo
+                                </Link>
+                            </Button>
+                        </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroup>
 
@@ -179,7 +233,7 @@ export function AppSidebar() {
                 )}
 
                 {/* Worksheet history */}
-                <SidebarGroup className="flex-1">
+                <SidebarGroup>
                     <SidebarGroupLabel>
                         <span>Histórico de listas</span>
                     </SidebarGroupLabel>
@@ -187,20 +241,20 @@ export function AppSidebar() {
                         <div className="flex items-center gap-2 rounded-md border border-input px-2 py-1.5 text-sm text-muted-foreground shadow-xs">
                             <Search className="size-4 shrink-0" />
                             <Input
-                                value={search}
-                                onChange={(event) => setSearch(event.target.value)}
+                                value={worksheetSearch}
+                                onChange={(event) => setWorksheetSearch(event.target.value)}
                                 placeholder="Buscar listas"
                                 className="h-7 border-0 bg-transparent px-0 text-sm shadow-none focus-visible:ring-0"
                             />
                         </div>
                     </div>
-                    <div className="flex-1 space-y-1 px-2 pb-2">
-                        {filteredHistory.length === 0 ? (
+                    <div className="space-y-1 px-2 pb-2">
+                        {filteredWorksheetHistory.length === 0 ? (
                             <div className="rounded-md border border-dashed border-input px-3 py-4 text-sm text-muted-foreground">
                                 Nenhuma lista encontrada.
                             </div>
                         ) : (
-                            filteredHistory.map((item) => (
+                            filteredWorksheetHistory.map((item) => (
                                 <SidebarMenuItem key={item.id}>
                                     <SidebarMenuButton
                                         asChild
@@ -253,6 +307,90 @@ export function AppSidebar() {
                                             >
                                                 <Trash2 className="size-4" />
                                                 Remover lista
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </SidebarMenuItem>
+                            ))
+                        )}
+                    </div>
+                </SidebarGroup>
+
+                {/* Summary history */}
+                <SidebarGroup className="flex-1">
+                    <SidebarGroupLabel>
+                        <span>Histórico de resumos</span>
+                    </SidebarGroupLabel>
+                    <div className="px-2 pb-2">
+                        <div className="flex items-center gap-2 rounded-md border border-input px-2 py-1.5 text-sm text-muted-foreground shadow-xs">
+                            <Search className="size-4 shrink-0" />
+                            <Input
+                                value={summarySearch}
+                                onChange={(event) => setSummarySearch(event.target.value)}
+                                placeholder="Buscar resumos"
+                                className="h-7 border-0 bg-transparent px-0 text-sm shadow-none focus-visible:ring-0"
+                            />
+                        </div>
+                    </div>
+                    <div className="flex-1 space-y-1 px-2 pb-2">
+                        {filteredSummaryHistory.length === 0 ? (
+                            <div className="rounded-md border border-dashed border-input px-3 py-4 text-sm text-muted-foreground">
+                                Nenhum resumo encontrado.
+                            </div>
+                        ) : (
+                            filteredSummaryHistory.map((item) => (
+                                <SidebarMenuItem key={item.id}>
+                                    <SidebarMenuButton
+                                        asChild
+                                        className={cn(
+                                            'flex items-start gap-3 text-left',
+                                            resolveUrl(url).includes('resumos')
+                                                ? 'data-[active=true]:bg-accent data-[active=true]:text-foreground'
+                                                : '',
+                                        )}
+                                        isActive={
+                                            resolveUrl(url) ===
+                                            resolveUrl(
+                                                summariesIndex({
+                                                    query: { summary: item.id },
+                                                }),
+                                            )
+                                        }
+                                    >
+                                        <Link
+                                            href={summariesIndex({
+                                                query: { summary: item.id },
+                                            })}
+                                            prefetch
+                                        >
+                                            <div className="flex flex-col gap-0.5">
+                                                <span className="line-clamp-1 text-sm font-medium">
+                                                    {item.title}
+                                                </span>
+                                                <span className="line-clamp-1 text-xs text-muted-foreground">
+                                                    {item.discipline}
+                                                </span>
+                                            </div>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <SidebarMenuAction showOnHover>
+                                                <span className="sr-only">
+                                                    Opções do resumo
+                                                </span>
+                                                <MoreHorizontal className="size-4" />
+                                            </SidebarMenuAction>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem
+                                                variant="destructive"
+                                                onClick={() =>
+                                                    handleRemoveSummary(item.id)
+                                                }
+                                            >
+                                                <Trash2 className="size-4" />
+                                                Remover resumo
                                             </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>

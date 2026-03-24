@@ -33,6 +33,13 @@ export interface SharedData {
         topic: string;
         created_at: string;
     }[];
+    summaryHistory?: {
+        id: number;
+        title: string;
+        discipline: string;
+        topic: string;
+        created_at: string;
+    }[];
     [key: string]: unknown;
 }
 

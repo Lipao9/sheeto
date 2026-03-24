@@ -59,4 +59,9 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Worksheet::class);
     }
+
+    public function summaries(): HasMany
+    {
+        return $this->hasMany(Summary::class);
+    }
 }

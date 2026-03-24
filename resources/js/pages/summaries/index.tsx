@@ -1,0 +1,277 @@
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
+import AppLayout from '@/layouts/app-layout';
+import { click as summariesShareClick } from '@/routes/summaries/share';
+import { create as summariesCreate, index as summariesIndex } from '@/routes/summaries';
+import { type BreadcrumbItem } from '@/types';
+import { Head, Link, router } from '@inertiajs/react';
+import { useState } from 'react';
+
+type Summary = {
+    id: number;
+    title: string;
+    discipline: string;
+    topic: string;
+    source_file_name?: string | null;
+    page_range_start?: number | null;
+    page_range_end?: number | null;
+    total_pages?: number | null;
+    content?: string | null;
+    share_url?: string | null;
+    share_link_copies_count?: number;
+    share_link_visits_count?: number;
+    created_at: string;
+};
+
+type SummariesPageProps = {
+    summary?: Summary | null;
+};
+
+const formatCreatedAt = (value: string): string => {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+
+    return new Intl.DateTimeFormat('pt-BR', {
+        dateStyle: 'medium',
+        timeStyle: 'short',
+    }).format(date);
+};
+
+export default function SummariesIndexPage({ summary }: SummariesPageProps) {
+    const [isShareCopied, setIsShareCopied] = useState(false);
+    const [isCopied, setIsCopied] = useState(false);
+
+    const canShare = Boolean(summary?.share_url);
+    const canCopy = Boolean(summary?.content);
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Resumos',
+            href: summariesIndex().url,
+        },
+    ];
+
+    const handleShare = () => {
+        if (!summary?.share_url) {
+            return;
+        }
+
+        navigator.clipboard.writeText(summary.share_url).then(() => {
+            setIsShareCopied(true);
+            setTimeout(() => setIsShareCopied(false), 2500);
+
+            router.post(
+                summariesShareClick(summary.id).url,
+                {},
+                { preserveScroll: true, preserveState: true },
+            );
+        });
+    };
+
+    const handleCopy = () => {
+        if (!summary?.content) {
+            return;
+        }
+
+        navigator.clipboard.writeText(summary.content).then(() => {
+            setIsCopied(true);
+            setTimeout(() => setIsCopied(false), 2500);
+        });
+    };
+
+    const handlePrint = () => {
+        window.print();
+    };
+
+    const handleDelete = () => {
+        if (!summary) {
+            return;
+        }
+
+        if (!window.confirm('Deseja remover este resumo?')) {
+            return;
+        }
+
+        router.delete(
+            summariesIndex().url.replace(/\/?$/, `/${summary.id}`),
+            { preserveScroll: true },
+        );
+    };
+
+    const pageRangeLabel =
+        summary?.page_range_start && summary?.page_range_end
+            ? `Páginas ${summary.page_range_start}–${summary.page_range_end}`
+            : summary?.total_pages
+              ? `${summary.total_pages} páginas (documento inteiro)`
+              : null;
+
+    return (
+        <AppLayout breadcrumbs={breadcrumbs}>
+            <Head title={summary ? summary.title : 'Resumos'} />
+
+            {/* Print-only view */}
+            {summary && (
+                <div className="hidden print:block">
+                    <div className="mb-4 border-b pb-4">
+                        <h1 className="text-xl font-bold">{summary.title}</h1>
+                        <p className="text-sm text-gray-600">
+                            {summary.discipline} - {summary.topic}
+                        </p>
+                        {pageRangeLabel && (
+                            <p className="text-sm text-gray-500">
+                                {pageRangeLabel}
+                            </p>
+                        )}
+                    </div>
+                    <pre className="whitespace-pre-wrap text-sm leading-relaxed">
+                        {summary.content}
+                    </pre>
+                </div>
+            )}
+
+            <div className="no-print flex h-full flex-col gap-4 overflow-x-auto p-4">
+                <Card>
+                    <CardHeader className="gap-2">
+                        <CardTitle>
+                            {summary
+                                ? summary.title
+                                : 'Nenhum resumo selecionado'}
+                        </CardTitle>
+                        <CardDescription className="text-sm">
+                            {summary
+                                ? 'Revise o resumo gerado e compartilhe.'
+                                : 'Crie um novo resumo para visualizar aqui.'}
+                        </CardDescription>
+                        {summary && (
+                            <div className="flex flex-col gap-2">
+                                <div className="flex flex-wrap gap-2">
+                                    <Button
+                                        type="button"
+                                        size="sm"
+                                        onClick={handleShare}
+                                        disabled={!canShare}
+                                    >
+                                        {isShareCopied
+                                            ? 'Link copiado!'
+                                            : 'Copiar link de compartilhamento'}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={handlePrint}
+                                    >
+                                        Imprimir / PDF
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        size="sm"
+                                        onClick={handleCopy}
+                                        disabled={!canCopy}
+                                    >
+                                        {isCopied ? 'Copiado!' : 'Copiar resumo'}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={handleDelete}
+                                    >
+                                        Excluir
+                                    </Button>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    {isShareCopied
+                                        ? 'Link pronto para compartilhar.'
+                                        : 'Use o link compartilhável para enviar o resumo sem exigir login.'}
+                                </p>
+                            </div>
+                        )}
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        {summary ? (
+                            <>
+                                <div className="grid gap-2 text-sm text-muted-foreground sm:grid-cols-2 sm:gap-3">
+                                    <div>
+                                        <span className="font-medium text-foreground">
+                                            Disciplina:
+                                        </span>{' '}
+                                        {summary.discipline}
+                                    </div>
+                                    <div>
+                                        <span className="font-medium text-foreground">
+                                            Tópico:
+                                        </span>{' '}
+                                        {summary.topic}
+                                    </div>
+                                    {summary.source_file_name && (
+                                        <div>
+                                            <span className="font-medium text-foreground">
+                                                Arquivo:
+                                            </span>{' '}
+                                            {summary.source_file_name}
+                                        </div>
+                                    )}
+                                    {pageRangeLabel && (
+                                        <div>
+                                            <span className="font-medium text-foreground">
+                                                Intervalo:
+                                            </span>{' '}
+                                            {pageRangeLabel}
+                                        </div>
+                                    )}
+                                    <div>
+                                        <span className="font-medium text-foreground">
+                                            Compartilhamentos:
+                                        </span>{' '}
+                                        {summary.share_link_copies_count ?? 0}
+                                    </div>
+                                    <div>
+                                        <span className="font-medium text-foreground">
+                                            Aberturas do link:
+                                        </span>{' '}
+                                        {summary.share_link_visits_count ?? 0}
+                                    </div>
+                                    <div className="sm:col-span-2">
+                                        <span className="font-medium text-foreground">
+                                            Criado em:
+                                        </span>{' '}
+                                        {formatCreatedAt(summary.created_at)}
+                                    </div>
+                                </div>
+                                <div className="rounded-lg border bg-muted/60 px-4 py-3 text-sm leading-relaxed text-foreground">
+                                    <pre className="whitespace-pre-wrap">
+                                        {summary.content ??
+                                            'Nenhum conteúdo gerado para este resumo.'}
+                                    </pre>
+                                </div>
+                            </>
+                        ) : (
+                            <div className="flex items-center justify-between rounded-lg border border-dashed px-4 py-3 text-sm text-muted-foreground">
+                                <span>
+                                    Crie um resumo para visualizá-lo aqui.
+                                </span>
+                                <Button asChild variant="secondary" size="sm">
+                                    <Link href={summariesCreate()}>
+                                        Novo resumo
+                                    </Link>
+                                </Button>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
+            </div>
+        </AppLayout>
+    );
+}
