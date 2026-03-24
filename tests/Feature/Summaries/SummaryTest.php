@@ -78,6 +78,8 @@ test('user can view the create summary page', function () {
 });
 
 test('user can create a summary with a text file', function () {
+    config()->set('services.openai.api_key', 'fake-key');
+
     $user = User::factory()->create();
 
     Http::fake([
