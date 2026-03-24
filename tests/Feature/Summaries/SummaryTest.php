@@ -103,15 +103,15 @@ test('user can create a summary with a text file', function () {
 
     $summary = Summary::query()->where('user_id', $user->id)->first();
 
-    $response->assertRedirect(
-        route('summaries.show', ['summary' => $summary?->id])
-    );
-
     expect($summary)->not()->toBeNull()
-        ->and($summary?->content)->not->toBeEmpty()
-        ->and($summary?->discipline)->toBe('Matematica')
-        ->and($summary?->topic)->toBe('Algebra')
-        ->and($summary?->source_file_name)->toBe('estudo.txt');
+        ->and($summary->content)->not->toBeEmpty()
+        ->and($summary->discipline)->toBe('Matematica')
+        ->and($summary->topic)->toBe('Algebra')
+        ->and($summary->source_file_name)->toBe('estudo.txt');
+
+    $response->assertRedirect(
+        route('summaries.show', ['summary' => $summary->id])
+    );
 });
 
 test('user can delete a summary', function () {
