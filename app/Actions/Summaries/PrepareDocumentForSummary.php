@@ -4,6 +4,8 @@ namespace App\Actions\Summaries;
 
 use App\Support\PdfPageCounter;
 use App\Support\PdfTextExtractor;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
@@ -134,6 +136,34 @@ class PrepareDocumentForSummary
         ?int $pageRangeStart = null,
         ?int $pageRangeEnd = null
     ): array {
+        $retrySleep = function (int $attempt, ?Throwable $exception = null): int {
+            if ($exception instanceof RequestException && $exception->response->status() === 429) {
+                $retryAfter = $exception->response->header('Retry-After');
+
+                if ($retryAfter !== null && is_numeric($retryAfter)) {
+                    return (int) ((float) $retryAfter * 1000) + 1000;
+                }
+
+                return min($attempt * 20_000, 60_000);
+            }
+
+            return $attempt * 5000;
+        };
+
+        $retryWhen = function (Throwable $exception): bool {
+            if ($exception instanceof ConnectionException) {
+                return true;
+            }
+
+            if ($exception instanceof RequestException) {
+                $status = $exception->response->status();
+
+                return $status === 429 || $status >= 500;
+            }
+
+            return false;
+        };
+
         $fileHandle = fopen($sourceDocument->getRealPath(), 'rb');
 
         if ($fileHandle === false) {
@@ -144,7 +174,7 @@ class PrepareDocumentForSummary
             ->withToken($apiKey)
             ->acceptJson()
             ->timeout(60)
-            ->retry(3, fn (int $attempt) => $attempt * 5000)
+            ->retry(times: 5, sleepMilliseconds: $retrySleep, when: $retryWhen)
             ->attach('file', $fileHandle, $sourceDocument->getClientOriginalName())
             ->post('files', [
                 'purpose' => 'user_data',
@@ -173,7 +203,7 @@ class PrepareDocumentForSummary
                 ->withToken($apiKey)
                 ->acceptJson()
                 ->timeout(120)
-                ->retry(3, fn (int $attempt) => $attempt * 5000)
+                ->retry(times: 5, sleepMilliseconds: $retrySleep, when: $retryWhen)
                 ->post('responses', [
                     'model' => $model,
                     'temperature' => 0.1,
@@ -334,7 +364,35 @@ PROMPT,
                 ->acceptJson()
                 ->connectTimeout(10)
                 ->timeout(50)
-                ->retry(3, fn (int $attempt) => $attempt * 5000)
+                ->retry(
+                    times: 5,
+                    sleepMilliseconds: function (int $attempt, ?Throwable $exception = null) {
+                        if ($exception instanceof RequestException && $exception->response->status() === 429) {
+                            $retryAfter = $exception->response->header('Retry-After');
+
+                            if ($retryAfter !== null && is_numeric($retryAfter)) {
+                                return (int) ((float) $retryAfter * 1000) + 1000;
+                            }
+
+                            return min($attempt * 20_000, 60_000);
+                        }
+
+                        return $attempt * 5000;
+                    },
+                    when: function (Throwable $exception) {
+                        if ($exception instanceof ConnectionException) {
+                            return true;
+                        }
+
+                        if ($exception instanceof RequestException) {
+                            $status = $exception->response->status();
+
+                            return $status === 429 || $status >= 500;
+                        }
+
+                        return false;
+                    }
+                )
                 ->post('chat/completions', [
                     'model' => $model,
                     'temperature' => 0.1,

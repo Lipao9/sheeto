@@ -15,7 +15,7 @@ class ProcessSummary implements ShouldQueue
 {
     use Queueable;
 
-    public int $timeout = 300;
+    public int $timeout = 600;
 
     public int $tries = 1;
 
