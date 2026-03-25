@@ -1,0 +1,42 @@
+#!/bin/sh
+
+set -eu
+
+remote_name="${1:-origin}"
+remote_url="${2:-}"
+
+if [ "${ALLOW_PROTECTED_BRANCH_PUSH:-0}" = "1" ]; then
+    exit 0
+fi
+
+blocked_ref=""
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+    case "${remote_ref:-}" in
+        refs/heads/main|refs/heads/develop)
+            blocked_ref="$remote_ref"
+            break
+            ;;
+    esac
+done
+
+if [ -z "$blocked_ref" ]; then
+    exit 0
+fi
+
+blocked_branch="${blocked_ref#refs/heads/}"
+
+cat >&2 <<EOF
+Push direto para '${blocked_branch}' bloqueado neste repositório.
+
+Fluxo esperado:
+- feature/fix -> develop
+- develop -> main via Pull Request de release
+
+Se voce realmente precisar furar essa protecao local:
+ALLOW_PROTECTED_BRANCH_PUSH=1 git push ${remote_name} <sua-branch>:${blocked_branch}
+
+Remote: ${remote_name}${remote_url:+ (${remote_url})}
+EOF
+
+exit 1
