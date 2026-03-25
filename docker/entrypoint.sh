@@ -17,7 +17,7 @@ php artisan config:clear || true
 php artisan route:clear || true
 php artisan view:clear || true
 
-# Se você quiser rodar migrate automaticamente (nem todo mundo quer):
-# php artisan migrate --force || true
+# Run pending migrations on deploy
+php artisan migrate --force || true
 
 exec supervisord -c /etc/supervisord.conf
