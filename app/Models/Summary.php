@@ -11,6 +11,12 @@ class Summary extends Model
     /** @use HasFactory<\Database\Factories\SummaryFactory> */
     use HasFactory;
 
+    public const STATUS_PROCESSING = 'processing';
+
+    public const STATUS_COMPLETED = 'completed';
+
+    public const STATUS_FAILED = 'failed';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -25,6 +31,8 @@ class Summary extends Model
         'page_range_end',
         'total_pages',
         'content',
+        'status',
+        'error_message',
     ];
 
     /**
@@ -46,5 +54,20 @@ class Summary extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function isProcessing(): bool
+    {
+        return $this->status === self::STATUS_PROCESSING;
+    }
+
+    public function isCompleted(): bool
+    {
+        return $this->status === self::STATUS_COMPLETED;
+    }
+
+    public function isFailed(): bool
+    {
+        return $this->status === self::STATUS_FAILED;
     }
 }

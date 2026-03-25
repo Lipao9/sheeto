@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Summary;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -32,8 +33,26 @@ class SummaryFactory extends Factory
             'page_range_end' => $rangeEnd,
             'total_pages' => $totalPages,
             'content' => fake()->paragraphs(5, true),
+            'status' => Summary::STATUS_COMPLETED,
             'share_link_copies_count' => 0,
             'share_link_visits_count' => 0,
         ];
+    }
+
+    public function processing(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => Summary::STATUS_PROCESSING,
+            'content' => null,
+        ]);
+    }
+
+    public function failed(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => Summary::STATUS_FAILED,
+            'content' => null,
+            'error_message' => 'Não foi possível gerar o resumo. Tente novamente.',
+        ]);
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Actions\Summaries;
 
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -133,7 +135,35 @@ class GenerateSummary
                 ->acceptJson()
                 ->connectTimeout(10)
                 ->timeout(120)
-                ->retry(1, 200)
+                ->retry(
+                    times: 5,
+                    sleepMilliseconds: function (int $attempt, ?Throwable $exception = null) {
+                        if ($exception instanceof RequestException && $exception->response->status() === 429) {
+                            $retryAfter = $exception->response->header('Retry-After');
+
+                            if ($retryAfter !== null && is_numeric($retryAfter)) {
+                                return (int) ((float) $retryAfter * 1000) + 1000;
+                            }
+
+                            return min($attempt * 20_000, 60_000);
+                        }
+
+                        return $attempt * 5000;
+                    },
+                    when: function (Throwable $exception) {
+                        if ($exception instanceof ConnectionException) {
+                            return true;
+                        }
+
+                        if ($exception instanceof RequestException) {
+                            $status = $exception->response->status();
+
+                            return $status === 429 || $status >= 500;
+                        }
+
+                        return false;
+                    }
+                )
                 ->post('chat/completions', [
                     'model' => $model,
                     'messages' => [

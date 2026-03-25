@@ -88,6 +88,11 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     gd \
     opcache
 
+# PHP upload / execution limits
+RUN echo "upload_max_filesize=12M" > /usr/local/etc/php/conf.d/uploads.ini \
+ && echo "post_max_size=16M" >> /usr/local/etc/php/conf.d/uploads.ini \
+ && echo "max_execution_time=600" >> /usr/local/etc/php/conf.d/uploads.ini
+
 RUN sed -i 's/^;clear_env = no/clear_env = no/' /usr/local/etc/php-fpm.d/www.conf \
  && sed -i 's/^;catch_workers_output = yes/catch_workers_output = yes/' /usr/local/etc/php-fpm.d/www.conf \
  && sed -i 's/^user = .*/user = appuser/' /usr/local/etc/php-fpm.d/www.conf \
@@ -112,6 +117,8 @@ RUN chmod +x /entrypoint.sh
 # so create them before chmod/chown.
 RUN addgroup -g 1000 -S appgroup && adduser -u 1000 -S appuser -G appgroup \
  && mkdir -p /var/www/html/bootstrap/cache \
+            /var/www/html/storage/app \
+            /var/www/html/storage/logs \
             /var/www/html/storage/framework/cache \
             /var/www/html/storage/framework/sessions \
             /var/www/html/storage/framework/views \
