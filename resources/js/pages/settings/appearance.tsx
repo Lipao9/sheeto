@@ -1,30 +1,31 @@
-import { Head } from '@inertiajs/react';
-
 import AppearanceTabs from '@/components/appearance-tabs';
 import HeadingSmall from '@/components/heading-small';
-import { type BreadcrumbItem } from '@/types';
-
+import { useTranslation } from '@/hooks/use-translation';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 import { edit as editAppearance } from '@/routes/appearance';
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Configurações de aparência',
-        href: editAppearance().url,
-    },
-];
+import { type BreadcrumbItem } from '@/types';
+import { Head } from '@inertiajs/react';
 
 export default function Appearance() {
+    const { t } = useTranslation();
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: t('Appearance settings'),
+            href: editAppearance().url,
+        },
+    ];
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Configurações de aparência" />
+            <Head title={t('Appearance settings')} />
 
             <SettingsLayout>
                 <div className="space-y-6">
                     <HeadingSmall
-                        title="Aparência"
-                        description="Ajuste como o Sheeto aparece para você"
+                        title={t('Appearance')}
+                        description={t('Adjust how Sheeto looks for you')}
                     />
                     <AppearanceTabs />
                 </div>

@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/tooltip';
 import { UserMenuContent } from '@/components/user-menu-content';
 import { useInitials } from '@/hooks/use-initials';
+import { useTranslation } from '@/hooks/use-translation';
 import { cn, isSameUrl, resolveUrl } from '@/lib/utils';
 import { dashboard } from '@/routes';
 import { index as worksheetsIndex } from '@/routes/worksheets';
@@ -36,32 +37,6 @@ import { Link, usePage } from '@inertiajs/react';
 import { BookOpen, ClipboardList, Folder, LayoutDashboard, LayoutGrid, Menu, Search } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
-
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Início',
-        href: dashboard(),
-        icon: LayoutDashboard,
-    },
-    {
-        title: 'Listas',
-        href: worksheetsIndex(),
-        icon: ClipboardList,
-    },
-];
-
-const rightNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: Folder,
-    },
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
-    },
-];
 
 const activeItemStyles =
     'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
@@ -74,6 +49,33 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const page = usePage<SharedData>();
     const { auth } = page.props;
     const getInitials = useInitials();
+    const { t } = useTranslation();
+
+    const mainNavItems: NavItem[] = [
+        {
+            title: t('Home'),
+            href: dashboard(),
+            icon: LayoutDashboard,
+        },
+        {
+            title: t('Worksheets'),
+            href: worksheetsIndex(),
+            icon: ClipboardList,
+        },
+    ];
+
+    const rightNavItems: NavItem[] = [
+        {
+            title: t('Repository'),
+            href: 'https://github.com/laravel/react-starter-kit',
+            icon: Folder,
+        },
+        {
+            title: t('Documentation'),
+            href: 'https://laravel.com/docs/starter-kits#react',
+            icon: BookOpen,
+        },
+    ];
     return (
         <>
             <div className="border-b border-sidebar-border/80">
