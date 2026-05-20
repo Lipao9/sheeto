@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -38,6 +39,12 @@ class HandleInertiaRequests extends Middleware
     {
         [$message, $author] = str(Inspiring::quotes()->random())->explode('-');
 
+        $locale = app()->getLocale();
+        $translationFile = lang_path("{$locale}.json");
+        $translations = File::exists($translationFile)
+            ? json_decode(File::get($translationFile), true)
+            : [];
+
         return [
             ...parent::share($request),
             'name' => config('app.name'),
@@ -45,6 +52,8 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
+            'locale' => $locale,
+            'translations' => $translations,
         ];
     }
 }

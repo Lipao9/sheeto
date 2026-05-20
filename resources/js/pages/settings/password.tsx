@@ -11,28 +11,30 @@ import HeadingSmall from '@/components/heading-small';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useTranslation } from '@/hooks/use-translation';
 import { edit } from '@/routes/user-password';
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Configurações de senha',
-        href: edit().url,
-    },
-];
 
 export default function Password() {
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
+    const { t } = useTranslation();
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: t('Password settings'),
+            href: edit().url,
+        },
+    ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Configurações de senha" />
+            <Head title={t('Password settings')} />
 
             <SettingsLayout>
                 <div className="space-y-6">
                     <HeadingSmall
-                        title="Atualizar senha"
-                        description="Use uma senha longa e segura para proteger sua conta"
+                        title={t('Update password')}
+                        description={t('Use a long and secure password to protect your account')}
                     />
 
                     <Form
@@ -61,7 +63,7 @@ export default function Password() {
                             <>
                                 <div className="grid gap-2">
                                     <Label htmlFor="current_password">
-                                        Senha atual
+                                        {t('Current password')}
                                     </Label>
 
                                     <Input
@@ -71,7 +73,7 @@ export default function Password() {
                                         type="password"
                                         className="mt-1 block w-full"
                                         autoComplete="current-password"
-                                        placeholder="Digite sua senha atual"
+                                        placeholder={t('Enter your current password')}
                                     />
 
                                     <InputError
@@ -80,7 +82,7 @@ export default function Password() {
                                 </div>
 
                                 <div className="grid gap-2">
-                                    <Label htmlFor="password">Nova senha</Label>
+                                    <Label htmlFor="password">{t('New password')}</Label>
 
                                     <Input
                                         id="password"
@@ -89,7 +91,7 @@ export default function Password() {
                                         type="password"
                                         className="mt-1 block w-full"
                                         autoComplete="new-password"
-                                        placeholder="Crie uma nova senha"
+                                        placeholder={t('Create a new password')}
                                     />
 
                                     <InputError message={errors.password} />
@@ -97,7 +99,7 @@ export default function Password() {
 
                                 <div className="grid gap-2">
                                     <Label htmlFor="password_confirmation">
-                                        Confirmar senha
+                                        {t('Confirm password')}
                                     </Label>
 
                                     <Input
@@ -106,7 +108,7 @@ export default function Password() {
                                         type="password"
                                         className="mt-1 block w-full"
                                         autoComplete="new-password"
-                                        placeholder="Repita a nova senha"
+                                        placeholder={t('Repeat the new password')}
                                     />
 
                                     <InputError
@@ -119,7 +121,7 @@ export default function Password() {
                                         disabled={processing}
                                         data-test="update-password-button"
                                     >
-                                        Salvar senha
+                                        {t('Save password')}
                                     </Button>
 
                                     <Transition
@@ -130,7 +132,7 @@ export default function Password() {
                                         leaveTo="opacity-0"
                                     >
                                         <p className="text-sm text-neutral-600">
-                                            Salvo
+                                            {t('Saved')}
                                         </p>
                                     </Transition>
                                 </div>

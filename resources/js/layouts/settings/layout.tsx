@@ -1,8 +1,10 @@
 import Heading from '@/components/heading';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
+import { useTranslation } from '@/hooks/use-translation';
 import { cn, isSameUrl, resolveUrl } from '@/lib/utils';
 import { edit as editAppearance } from '@/routes/appearance';
+import { edit as editLanguage } from '@/routes/language';
 import { edit } from '@/routes/profile';
 import { show } from '@/routes/two-factor';
 import { edit as editPassword } from '@/routes/user-password';
@@ -10,42 +12,48 @@ import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
 
-const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Perfil',
-        href: edit(),
-        icon: null,
-    },
-    {
-        title: 'Senha',
-        href: editPassword(),
-        icon: null,
-    },
-    {
-        title: 'Autenticação de dois fatores',
-        href: show(),
-        icon: null,
-    },
-    {
-        title: 'Aparência',
-        href: editAppearance(),
-        icon: null,
-    },
-];
-
 export default function SettingsLayout({ children }: PropsWithChildren) {
     // When server-side rendering, we only render the layout on the client...
     if (typeof window === 'undefined') {
         return null;
     }
 
+    const { t } = useTranslation();
     const currentPath = window.location.pathname;
+
+    const sidebarNavItems: NavItem[] = [
+        {
+            title: t('Profile'),
+            href: edit(),
+            icon: null,
+        },
+        {
+            title: t('Password'),
+            href: editPassword(),
+            icon: null,
+        },
+        {
+            title: t('Two-factor authentication'),
+            href: show(),
+            icon: null,
+        },
+        {
+            title: t('Appearance'),
+            href: editAppearance(),
+            icon: null,
+        },
+        {
+            title: t('Language'),
+            href: editLanguage(),
+            icon: null,
+        },
+    ];
 
     return (
         <div className="px-4 py-6">
             <Heading
-                title="Configurações"
-                description="Gerencie seu perfil e as preferências da conta"
+                title={t('Settings')}
+                description={t('Manage your profile and account preferences')}
             />
 
             <div className="flex flex-col lg:flex-row lg:space-x-12">

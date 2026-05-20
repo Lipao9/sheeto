@@ -1,9 +1,10 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/hooks/use-translation';
 import AppLayout from '@/layouts/app-layout';
 import { create as worksheetsCreate, index as worksheetsIndex, show as worksheetsShow } from '@/routes/worksheets';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { type BreadcrumbItem, type SharedData } from '@/types';
+import { Head, Link, usePage } from '@inertiajs/react';
 
 type WorksheetItem = {
     id: number;
@@ -33,45 +34,48 @@ const difficultyColors: Record<string, string> = {
     dificil: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400',
 };
 
-const difficultyLabels: Record<string, string> = {
-    facil: 'Fácil',
-    intermediario: 'Intermediário',
-    dificil: 'Difícil',
-};
-
-const formatDate = (value: string): string => {
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-        return value;
-    }
-    return new Intl.DateTimeFormat('pt-BR', {
-        dateStyle: 'medium',
-    }).format(date);
-};
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Listas de exercícios',
-        href: worksheetsIndex().url,
-    },
-];
-
 export default function WorksheetsIndexPage({ worksheets }: WorksheetsIndexProps) {
+    const { locale } = usePage<SharedData>().props;
+    const { t } = useTranslation();
     const items = worksheets.data;
     const hasItems = items.length > 0;
+    const dateLocale = locale === 'pt_BR' ? 'pt-BR' : 'en-US';
+
+    const difficultyLabels: Record<string, string> = {
+        facil: t('Easy'),
+        intermediario: t('Intermediate'),
+        dificil: t('Hard'),
+    };
+
+    const formatDate = (value: string): string => {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+            return value;
+        }
+        return new Intl.DateTimeFormat(dateLocale, {
+            dateStyle: 'medium',
+        }).format(date);
+    };
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: t('Worksheet lists'),
+            href: worksheetsIndex().url,
+        },
+    ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Listas de exercícios" />
+            <Head title={t('Worksheet lists')} />
 
             <div className="flex h-full flex-col gap-6 p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-xl font-semibold tracking-tight">
-                        Listas de exercícios
+                        {t('Worksheet lists')}
                     </h1>
                     <Button asChild size="sm">
                         <Link href={worksheetsCreate()} prefetch>
-                            Nova lista
+                            {t('New worksheet')}
                         </Link>
                     </Button>
                 </div>
@@ -102,7 +106,7 @@ export default function WorksheetsIndexPage({ worksheets }: WorksheetsIndexProps
                                             {difficultyLabels[ws.difficulty] ?? ws.difficulty}
                                         </Badge>
                                         <span className="text-xs text-muted-foreground">
-                                            {ws.question_count} questões
+                                            {ws.question_count} {t('questions')}
                                         </span>
                                     </div>
                                     <span className="mt-auto text-xs text-muted-foreground">
@@ -117,17 +121,20 @@ export default function WorksheetsIndexPage({ worksheets }: WorksheetsIndexProps
                                 {worksheets.prev_page_url && (
                                     <Button asChild variant="outline" size="sm">
                                         <Link href={worksheets.prev_page_url} prefetch>
-                                            Anterior
+                                            {t('Previous')}
                                         </Link>
                                     </Button>
                                 )}
                                 <span className="text-sm text-muted-foreground">
-                                    Página {worksheets.current_page} de {worksheets.last_page}
+                                    {t('Page :current of :last', {
+                                        current: worksheets.current_page,
+                                        last: worksheets.last_page,
+                                    })}
                                 </span>
                                 {worksheets.next_page_url && (
                                     <Button asChild variant="outline" size="sm">
                                         <Link href={worksheets.next_page_url} prefetch>
-                                            Próxima
+                                            {t('Next')}
                                         </Link>
                                     </Button>
                                 )}
@@ -138,15 +145,15 @@ export default function WorksheetsIndexPage({ worksheets }: WorksheetsIndexProps
                     <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed bg-card p-10 text-center">
                         <div className="flex flex-col gap-1">
                             <p className="text-sm font-semibold">
-                                Nenhuma lista ainda
+                                {t('No worksheets yet')}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                                Crie sua primeira lista de exercícios com IA.
+                                {t('Create your first AI-powered worksheet.')}
                             </p>
                         </div>
                         <Button asChild size="sm">
                             <Link href={worksheetsCreate()} prefetch>
-                                Criar primeira lista
+                                {t('Create first worksheet')}
                             </Link>
                         </Button>
                     </div>
