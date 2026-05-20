@@ -26,6 +26,8 @@ export interface SharedData {
     name: string;
     quote: { message: string; author: string };
     auth: Auth;
+    locale: string;
+    translations: Record<string, string>;
     [key: string]: unknown;
 }
 
@@ -36,6 +38,7 @@ export interface User {
     avatar?: string;
     email_verified_at: string | null;
     is_admin?: boolean;
+    locale?: string;
     two_factor_enabled?: boolean;
     created_at: string;
     updated_at: string;

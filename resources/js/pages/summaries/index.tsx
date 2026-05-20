@@ -1,8 +1,9 @@
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/hooks/use-translation';
 import AppLayout from '@/layouts/app-layout';
 import { create as summariesCreate, index as summariesIndex, show as summariesShow } from '@/routes/summaries';
-import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/react';
+import { type BreadcrumbItem, type SharedData } from '@/types';
+import { Head, Link, usePage } from '@inertiajs/react';
 
 type SummaryItem = {
     id: number;
@@ -26,39 +27,42 @@ type SummariesIndexProps = {
     summaries: PaginatedSummaries;
 };
 
-const formatDate = (value: string): string => {
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-        return value;
-    }
-    return new Intl.DateTimeFormat('pt-BR', {
-        dateStyle: 'medium',
-    }).format(date);
-};
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Resumos',
-        href: summariesIndex().url,
-    },
-];
-
 export default function SummariesIndexPage({ summaries }: SummariesIndexProps) {
+    const { locale } = usePage<SharedData>().props;
+    const { t } = useTranslation();
     const items = summaries.data;
     const hasItems = items.length > 0;
+    const dateLocale = locale === 'pt_BR' ? 'pt-BR' : 'en-US';
+
+    const formatDate = (value: string): string => {
+        const date = new Date(value);
+        if (Number.isNaN(date.getTime())) {
+            return value;
+        }
+        return new Intl.DateTimeFormat(dateLocale, {
+            dateStyle: 'medium',
+        }).format(date);
+    };
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: t('Summaries'),
+            href: summariesIndex().url,
+        },
+    ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Resumos" />
+            <Head title={t('Summaries')} />
 
             <div className="flex h-full flex-col gap-6 p-4 sm:p-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-xl font-semibold tracking-tight">
-                        Resumos
+                        {t('Summaries')}
                     </h1>
                     <Button asChild size="sm">
                         <Link href={summariesCreate()} prefetch>
-                            Novo resumo
+                            {t('New summary')}
                         </Link>
                     </Button>
                 </div>
@@ -92,12 +96,12 @@ export default function SummariesIndexPage({ summaries }: SummariesIndexProps) {
                                         </span>
                                         {s.status === 'processing' && (
                                             <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
-                                                Gerando...
+                                                {t('Generating...')}
                                             </span>
                                         )}
                                         {s.status === 'failed' && (
                                             <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                                                Erro
+                                                {t('Error')}
                                             </span>
                                         )}
                                     </div>
@@ -110,17 +114,20 @@ export default function SummariesIndexPage({ summaries }: SummariesIndexProps) {
                                 {summaries.prev_page_url && (
                                     <Button asChild variant="outline" size="sm">
                                         <Link href={summaries.prev_page_url} prefetch>
-                                            Anterior
+                                            {t('Previous')}
                                         </Link>
                                     </Button>
                                 )}
                                 <span className="text-sm text-muted-foreground">
-                                    Página {summaries.current_page} de {summaries.last_page}
+                                    {t('Page :current of :last', {
+                                        current: summaries.current_page,
+                                        last: summaries.last_page,
+                                    })}
                                 </span>
                                 {summaries.next_page_url && (
                                     <Button asChild variant="outline" size="sm">
                                         <Link href={summaries.next_page_url} prefetch>
-                                            Próxima
+                                            {t('Next')}
                                         </Link>
                                     </Button>
                                 )}
@@ -131,15 +138,15 @@ export default function SummariesIndexPage({ summaries }: SummariesIndexProps) {
                     <div className="flex flex-col items-center gap-4 rounded-2xl border border-dashed bg-card p-10 text-center">
                         <div className="flex flex-col gap-1">
                             <p className="text-sm font-semibold">
-                                Nenhum resumo ainda
+                                {t('No summaries yet')}
                             </p>
                             <p className="text-xs text-muted-foreground">
-                                Crie seu primeiro resumo de estudo com IA.
+                                {t('Create your first AI-powered study summary.')}
                             </p>
                         </div>
                         <Button asChild size="sm">
                             <Link href={summariesCreate()} prefetch>
-                                Criar primeiro resumo
+                                {t('Create first summary')}
                             </Link>
                         </Button>
                     </div>

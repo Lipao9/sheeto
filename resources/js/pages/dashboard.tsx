@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button';
+import { useTranslation } from '@/hooks/use-translation';
 import AppLayout from '@/layouts/app-layout';
 import { create as worksheetsCreate, index as worksheetsIndex, show as worksheetsShow } from '@/routes/worksheets';
 import { create as summariesCreate, index as summariesIndex, show as summariesShow } from '@/routes/summaries';
@@ -12,13 +13,6 @@ import {
     Plus,
     Target,
 } from 'lucide-react';
-
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Início',
-        href: dashboard().url,
-    },
-];
 
 type RecentActivityItem = {
     id: number;
@@ -34,60 +28,70 @@ type DashboardProps = SharedData & {
     recentActivity: RecentActivityItem[];
 };
 
-const tools = [
-    {
-        icon: ClipboardList,
-        title: 'Listas de exercícios',
-        description: 'Gere listas com questões personalizadas para o seu nível.',
-        href: worksheetsCreate(),
-        color: '#E46D3A',
-        available: true,
-    },
-    {
-        icon: Brain,
-        title: 'Resumos',
-        description: 'Transforme conteúdos em resumos claros e objetivos.',
-        href: summariesCreate(),
-        color: '#1F9C8C',
-        available: true,
-    },
-    {
-        icon: Target,
-        title: 'Simulados',
-        description: 'Monte simulados sob medida para provas e vestibulares.',
-        color: '#F0B36E',
-        available: false,
-    },
-    {
-        icon: FileText,
-        title: 'Flashcards',
-        description: 'Crie cartões de memorização para fixar conceitos.',
-        color: '#E46D3A',
-        available: false,
-    },
-];
-
 export default function Dashboard({
     worksheetCount,
     summaryCount,
     recentActivity,
 }: DashboardProps) {
-    const { auth } = usePage<SharedData>().props;
+    const { auth, locale } = usePage<SharedData>().props;
+    const { t } = useTranslation();
     const firstName = auth.user.name.split(' ')[0];
     const totalCount = worksheetCount + summaryCount;
 
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: t('Home'),
+            href: dashboard().url,
+        },
+    ];
+
+    const tools = [
+        {
+            icon: ClipboardList,
+            title: t('Worksheet exercises'),
+            description: t('Worksheet exercises description'),
+            href: worksheetsCreate(),
+            color: '#E46D3A',
+            available: true,
+        },
+        {
+            icon: Brain,
+            title: t('Summaries tool'),
+            description: t('Summaries description'),
+            href: summariesCreate(),
+            color: '#1F9C8C',
+            available: true,
+        },
+        {
+            icon: Target,
+            title: t('Mock exams'),
+            description: t('Mock exams description'),
+            color: '#F0B36E',
+            available: false,
+        },
+        {
+            icon: FileText,
+            title: t('Flashcards'),
+            description: t('Flashcards description'),
+            color: '#E46D3A',
+            available: false,
+        },
+    ];
+
+    const dateLocale = locale === 'pt_BR' ? 'pt-BR' : 'en-US';
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Início" />
+            <Head title={t('Home')} />
 
             <div className="mx-auto flex w-full max-w-4xl flex-col gap-8 p-6">
                 {/* Welcome */}
                 <div className="flex flex-col gap-2">
                     <h1 className="text-2xl font-semibold tracking-tight">
-                        Olá, {firstName}!
+                        {t('Hello, :name!', { name: firstName })}
                     </h1>
                     <p className="text-sm text-muted-foreground">
-                        O que você quer estudar hoje?
+                        {t('What do you want to study today?')}
                     </p>
                 </div>
 
@@ -104,7 +108,7 @@ export default function Dashboard({
                         >
                             {!tool.available && (
                                 <span className="absolute right-4 top-4 rounded-full bg-muted px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                                    Em breve
+                                    {t('Coming soon')}
                                 </span>
                             )}
                             <div
@@ -131,7 +135,7 @@ export default function Dashboard({
                                     prefetch
                                 >
                                     <span className="sr-only">
-                                        Acessar {tool.title}
+                                        {t('Access :title', { title: tool.title })}
                                     </span>
                                 </Link>
                             )}
@@ -143,17 +147,17 @@ export default function Dashboard({
                 <div className="flex flex-col gap-6">
                     <div className="flex items-center justify-between">
                         <h2 className="text-lg font-semibold">
-                            Atividade recente
+                            {t('Recent activity')}
                         </h2>
                         <div className="flex gap-2">
                             <Button asChild variant="outline" size="sm">
                                 <Link href={worksheetsIndex()} prefetch>
-                                    Listas
+                                    {t('Worksheets')}
                                 </Link>
                             </Button>
                             <Button asChild variant="outline" size="sm">
                                 <Link href={summariesIndex()} prefetch>
-                                    Resumos
+                                    {t('Summaries')}
                                 </Link>
                             </Button>
                         </div>
@@ -166,23 +170,23 @@ export default function Dashboard({
                             </div>
                             <div className="flex flex-col gap-1">
                                 <p className="text-sm font-semibold">
-                                    Nenhuma atividade ainda
+                                    {t('No activity yet')}
                                 </p>
                                 <p className="text-xs text-muted-foreground">
-                                    Crie sua primeira lista ou resumo com IA.
+                                    {t('Create your first worksheet or summary with AI.')}
                                 </p>
                             </div>
                             <div className="flex gap-2">
                                 <Button asChild size="sm">
                                     <Link href={worksheetsCreate()} prefetch>
                                         <Plus className="mr-1 size-4" />
-                                        Nova lista
+                                        {t('New worksheet')}
                                     </Link>
                                 </Button>
                                 <Button asChild size="sm" variant="outline">
                                     <Link href={summariesCreate()} prefetch>
                                         <Plus className="mr-1 size-4" />
-                                        Novo resumo
+                                        {t('New summary')}
                                     </Link>
                                 </Button>
                             </div>
@@ -194,7 +198,7 @@ export default function Dashboard({
                                 const href = item.type === 'worksheet'
                                     ? worksheetsShow(item.id)
                                     : summariesShow(item.id);
-                                const typeLabel = item.type === 'worksheet' ? 'Lista' : 'Resumo';
+                                const typeLabel = item.type === 'worksheet' ? t('Worksheet') : t('Summary');
 
                                 return (
                                     <Link
@@ -218,7 +222,7 @@ export default function Dashboard({
                                             {typeLabel}
                                         </span>
                                         <span className="shrink-0 text-xs text-muted-foreground">
-                                            {new Date(item.created_at).toLocaleDateString('pt-BR')}
+                                            {new Date(item.created_at).toLocaleDateString(dateLocale)}
                                         </span>
                                     </Link>
                                 );
@@ -227,13 +231,13 @@ export default function Dashboard({
                                 <Button asChild variant="ghost" size="sm">
                                     <Link href={worksheetsCreate()} prefetch>
                                         <Plus className="mr-1 size-4" />
-                                        Nova lista
+                                        {t('New worksheet')}
                                     </Link>
                                 </Button>
                                 <Button asChild variant="ghost" size="sm">
                                     <Link href={summariesCreate()} prefetch>
                                         <Plus className="mr-1 size-4" />
-                                        Novo resumo
+                                        {t('New summary')}
                                     </Link>
                                 </Button>
                             </div>
